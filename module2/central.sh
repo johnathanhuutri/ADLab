@@ -11,13 +11,19 @@ then
 	exit
 fi
 
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+export EASYRSA_BATCH=1
+
 basic_setup() {
+	printf "\n\n\n${RED}### Basic setup ###${NC}\n"
 	apt-get update
 	apt-get remove -y unattended-upgrades
-	apt-get install -y build-essential unzip
+	apt-get install -y build-essential unzip python3-pip
 }
 
 install_docker() {
+	printf "\n\n\n${RED}### Docker installation ###${NC}\n"
 	# Add Docker's official GPG key:
 	apt-get update
 	apt-get install -y ca-certificates curl
@@ -31,11 +37,17 @@ install_docker() {
 	  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
 	  tee /etc/apt/sources.list.d/docker.list > /dev/null
 	apt-get update
+	apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 }
 
 setup_forcad() {
+	printf "\n\n\n${RED}### ForcAD installation ###${NC}\n"
 	unzip ForcAD_v1.4.0.zip
 	mv ForcAD_v1.4.0 /ForcAD
+	cd /ForcAD
+	pip3 install -r cli/requirements.txt
+	# grep -rl "docker-compose" . | xargs sed -i "s/docker-compose/docker',\n\t'compose/g"
+	cd -
 }
 
 basic_setup
