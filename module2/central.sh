@@ -44,9 +44,12 @@ setup_forcad() {
 	printf "\n\n\n${RED}### ForcAD installation ###${NC}\n"
 	unzip ForcAD_v1.4.0.zip
 	mv ForcAD_v1.4.0 /ForcAD
+
 	cd /ForcAD
 	pip3 install -r cli/requirements.txt
-	# grep -rl "docker-compose" . | xargs sed -i "s/docker-compose/docker',\n\t'compose/g"
+	sed -i "s/docker-compose/docker', 'compose/g" cli/utils.py
+	sed -i "s/docker-compose/docker', 'compose/g" cli/base/print_tokens.py
+	sed -i "s/docker-compose/docker', 'compose/g" cli/base/reset.py
 	cd -
 }
 
