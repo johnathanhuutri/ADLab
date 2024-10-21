@@ -19,7 +19,7 @@ basic_setup() {
 	printf "\n\n\n${RED}### Basic setup ###${NC}\n"
 	apt-get update
 	apt-get remove -y unattended-upgrades
-	apt-get install -y build-essential unzip python3-pip
+	apt-get install -y build-essential openvpn unzip python3-pip
 	mkdir -p /usr/share/.ssh
 	mkdir -p /root/.ssh
 	ssh-keygen -q -t rsa -N '' -f /usr/share/.ssh/id_rsa <<<y >/dev/null 2>&1
