@@ -72,12 +72,12 @@ class Checker(BaseChecker):
     def put(self, flag_id: str, flag: str, vuln: str):
         if int(vuln)==1:
             try:
-                sp.check_output(['ssh', '-p', '22', 'user@127.0.0.1', 'sh -c "echo hihihi > /flag1"'])
+                sp.check_output(['ssh', '-p', str(self.cm.get_port()), f'user@{self.cm.get_ip()}', f'sh -c "echo {flag} > /flag1"'])
             except:
                 self.cquit(Status.MUMBLE, 'put failed', f'{msg}')
         else:
             try:
-                sp.check_output(['ssh', '-p', '22', 'user@127.0.0.1', 'sh -c "echo hihihi > /flag2"'])
+                sp.check_output(['ssh', '-p', str(self.cm.get_port()), f'user@{self.cm.get_ip()}', f'sh -c "echo {flag} > /flag2"'])
             except:
                 self.cquit(Status.MUMBLE, 'put failed', f'{msg}')
         self.cquit(Status.OK, f"{flag}")
@@ -85,14 +85,14 @@ class Checker(BaseChecker):
     def get(self, flag_id: str, flag: str, vuln: str):
         if int(vuln)==1:
             try:
-                sp.check_output(['ssh', '-p', '22', 'user@127.0.0.1', 'sh -c "cat /flag1"'])
+                sp.check_output(['ssh', '-p', str(self.cm.get_port()), f'user@{self.cm.get_ip()}', 'sh -c "cat /flag1"'])
             except:
-                self.cquit(Status.MUMBLE, 'put failed', f'{msg}')
+                self.cquit(Status.CORRUPT, 'get failed', f'{msg}')
         else:
             try:
-                sp.check_output(['ssh', '-p', '22', 'user@127.0.0.1', 'sh -c "cat /flag2"'])
+                sp.check_output(['ssh', '-p', str(self.cm.get_port()), f'user@{self.cm.get_ip()}', 'sh -c "cat /flag2"'])
             except:
-                self.cquit(Status.MUMBLE, 'put failed', f'{msg}')
+                self.cquit(Status.CORRUPT, 'get failed', f'{msg}')
         self.cquit(Status.OK)
 
 

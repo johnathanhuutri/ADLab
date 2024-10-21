@@ -6,8 +6,6 @@ import random
 import string
 from requests_toolbelt import MultipartEncoder
 
-PORT = 8888
-
 class Utils:
     def rnd_string(length):
         return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
@@ -15,17 +13,20 @@ class Utils:
         return ''.join(random.choices(string.ascii_lowercase, k=length))
 
 class CheckMachine:
-    @property
-    def url(self):
-        if self.c.host == '192.168.0.1':
-            port=10101
-        elif self.c.host == '192.168.0.2':
-            port=10102
-        return f'https://127.0.0.1:{port}'
-        # return f'http://{self.c.host}:{PORT}/'
-
     def __init__(self, checker: BaseChecker):
         self.c = checker
+
+    def url(self):
+        return f'https://192.168.0.1:{self.get_port()}'
+
+    def get_ip(self):
+        return '192.168.0.1'
+
+    def get_port(self):
+        if self.c.host == '192.168.0.1':
+            return 10101
+        elif self.c.host == '192.168.0.2':
+            return 10102
 
     def register(self, session: requests.Session, username: str, password: str, email: str):
         resp = session.post(self.url + '/register.php', data={'username': username, 'password': password, 'email': email})

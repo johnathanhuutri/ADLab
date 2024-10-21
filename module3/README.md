@@ -2,14 +2,29 @@
 
 > 1 machine host all services of all teams
 
-`central.sh` will generate ssh key and store in `/usr/share/.ssh/` so when writing docker, you will need to transfer public key from `/usr/share/.ssh/` to service folder which contains Dockerfile so when build docker, checker can put flag to that!
+## Installed application
+- [ForcAD](https://github.com/pomo-mondreganto/ForcAD/releases/tag/v1.4.0)
+- [Docker](https://docs.docker.com/engine/install/ubuntu/)
+- Openvpn
+
+## Setup
+First, we will need to install 2 network adapter, first one is set to **NAT** and second one is set to **Host-only**:
+
+![](images/vmware-network-adapter-config.png)
+
+The script **init.sh** will config the second adapter ip to **`192.168.0.1/24`** so that bot can use this ip to check services.
+
+In addition, **init.sh** will also generate ssh key and store it in `/root/.ssh/` so when writing docker, you can take the template in challenge folder and build with command below:
 
 ```bash
-docker compose build --build-arg SSHKEY='<public-ssh-key>'
+docker compose build --build-arg SSHKEY="`cat /root/.ssh/id_rsa.pub`"
 ```
 
-Example:
+After it built successful, we can run challenge docker with the following command:
 
-```bash
-docker compose build --build-arg SSHKEY="`cat /home/user/.ssh/id_rsa.pub`"
 ```
+docker compose up --detach
+```
+
+
+

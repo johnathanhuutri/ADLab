@@ -27,6 +27,19 @@ basic_setup() {
 	apt-get remove -y unattended-upgrades
 	apt-get install -y build-essential openvpn unzip python3-pip
 	ssh-keygen -q -t rsa -N '' <<< $'\ny' >/dev/null 2>&1
+	echo -e \
+		"network:\n" \
+		"  version: 2\n" \
+		"  ethernets:\n" \
+		"    ens33:\n" \
+		"      optional: true\n" \
+		"      dhcp4: true\n" \
+		"    ens37:\n" \
+		"      optional: true\n" \
+		"      dhcp4: false\n" \
+		"      addresses: [192.168.0.1/24]\n" > "/etc/netplan/01-network-manager-all.yaml"
+	chmod 600 "/etc/netplan/01-network-manager-all.yaml"
+	netplan apply
 }
 
 install_docker() {
@@ -49,9 +62,7 @@ install_docker() {
 
 setup_forcad() {
 	printf "\n\n\n${RED}### ForcAD installation ###${NC}\n"
-	unzip ForcAD_v1.4.0.zip
-	mv ForcAD_v1.4.0 /ForcAD
-
+	unzip ForcAD.zip -d /
 	cd /ForcAD
 	pip3 install -r cli/requirements.txt
 	sed -i "s/docker-compose/docker', 'compose/g" cli/utils.py
