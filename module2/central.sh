@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$EUID" -ne 0 ]
-  then echo "Please run as root"
+  then echo "Please switch to sudo bash to run this script!"
   exit
 fi
 
@@ -20,6 +20,10 @@ basic_setup() {
 	apt-get update
 	apt-get remove -y unattended-upgrades
 	apt-get install -y build-essential unzip python3-pip
+	mkdir -p /usr/share/.ssh
+	mkdir -p /root/.ssh
+	ssh-keygen -q -t rsa -N '' -f /usr/share/.ssh/id_rsa <<<y >/dev/null 2>&1
+	cp /usr/share/.ssh/id_rsa* /root/.ssh
 }
 
 install_docker() {
