@@ -1,0 +1,17 @@
+services:
+  team1web1:
+    build:
+      context: .
+      dockerfile: ./web1/Dockerfile
+    hostname: web1team1
+    ports:
+      - "10101:80"
+      - "10121:22"
+  team2web1:
+    build:
+      context: .
+      dockerfile: ./web1/Dockerfile
+    hostname: web1team2
+    ports:
+      - "10201:80"
+      - "10221:22"
