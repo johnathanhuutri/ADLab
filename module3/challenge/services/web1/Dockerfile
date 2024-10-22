@@ -3,11 +3,19 @@ FROM ubuntu:22.04
 ### DO NOT CHANGE THESE LINES ##################
 ENV DEBIAN_FRONTEND=noninteractive
 ARG SSHKEY
+
+RUN apt-get update
+RUN apt-get install -y openssh-server
+RUN apt-get clean
+RUN sed
+
 RUN useradd -m ctf && \
 	echo "ctf:ctf" | chpasswd && \
 	echo /bin/bash | chsh ctf && \
 	mkdir /root/.ssh && \
 	echo $SSHKEY > /root/.ssh/authorized_keys
+RUN useradd -m ctf && \
+	echo "root:roottoor" | chpasswd
 ADD getflag /getflag
 RUN touch /flag1 && \
 	chmod 644 /flag1
@@ -17,7 +25,7 @@ RUN touch /flag2 && \
 ################################################
 
 RUN apt-get update
-RUN apt-get install -y openssh-server apache2 php
+RUN apt-get install -y apache2 php
 RUN apt-get clean
 
 ADD web1/share/entrypoint.sh /entrypoint.sh

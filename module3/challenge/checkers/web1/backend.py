@@ -17,7 +17,7 @@ class CheckMachine:
         self.c = checker
 
     def url(self):
-        return f'https://192.168.0.1:{self.get_port()}'
+        return f'https://{self.get_ip()}:{self.get_port()}'
 
     def get_ip(self):
         return '192.168.0.1'
@@ -27,6 +27,12 @@ class CheckMachine:
             return 10101
         elif self.c.host == '192.168.0.2':
             return 10102
+
+    def get_ssh_port(self):
+        if self.c.host == '192.168.0.1':
+            return 10121
+        elif self.c.host == '192.168.0.2':
+            return 10122
 
     def register(self, session: requests.Session, username: str, password: str, email: str):
         resp = session.post(self.url + '/register.php', data={'username': username, 'password': password, 'email': email})

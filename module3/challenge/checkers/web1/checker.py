@@ -72,12 +72,12 @@ class Checker(BaseChecker):
     def put(self, flag_id: str, flag: str, vuln: str):
         if int(vuln)==1:
             try:
-                sp.check_output(['ssh', '-p', str(self.cm.get_port()), f'user@{self.cm.get_ip()}', f'sh -c "echo {flag} > /flag1"'])
+                sp.check_output(['ssh', '-o', 'StrictHostKeyChecking no', '-p', str(self.cm.get_ssh_port()), f'root@{self.cm.get_ip()}', f'sh -c "echo {flag} > /flag1"'])
             except:
                 self.cquit(Status.MUMBLE, 'put failed', f'{msg}')
         else:
             try:
-                sp.check_output(['ssh', '-p', str(self.cm.get_port()), f'user@{self.cm.get_ip()}', f'sh -c "echo {flag} > /flag2"'])
+                sp.check_output(['ssh', '-o', 'StrictHostKeyChecking no', '-p', str(self.cm.get_ssh_port()), f'root@{self.cm.get_ip()}', f'sh -c "echo {flag} > /flag2"'])
             except:
                 self.cquit(Status.MUMBLE, 'put failed', f'{msg}')
         self.cquit(Status.OK, f"{flag}")
@@ -85,12 +85,12 @@ class Checker(BaseChecker):
     def get(self, flag_id: str, flag: str, vuln: str):
         if int(vuln)==1:
             try:
-                sp.check_output(['ssh', '-p', str(self.cm.get_port()), f'user@{self.cm.get_ip()}', 'sh -c "cat /flag1"'])
+                sp.check_output(['ssh', '-o', 'StrictHostKeyChecking no', '-p', str(self.cm.get_ssh_port()), f'root@{self.cm.get_ip()}', 'sh -c "cat /flag1"'])
             except:
                 self.cquit(Status.CORRUPT, 'get failed', f'{msg}')
         else:
             try:
-                sp.check_output(['ssh', '-p', str(self.cm.get_port()), f'user@{self.cm.get_ip()}', 'sh -c "cat /flag2"'])
+                sp.check_output(['ssh', '-o', 'StrictHostKeyChecking no', '-p', str(self.cm.get_ssh_port()), f'root@{self.cm.get_ip()}', 'sh -c "cat /flag2"'])
             except:
                 self.cquit(Status.CORRUPT, 'get failed', f'{msg}')
         self.cquit(Status.OK)

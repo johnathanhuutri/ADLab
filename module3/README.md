@@ -14,6 +14,7 @@ First, we will need to install 2 network adapter, first one is set to **NAT** an
 
 The script **init.sh** will config the second adapter ip to **`192.168.0.1/24`** so that bot can use this ip to check services.
 
+- Building challenge
 In addition, **init.sh** will also generate ssh key and store it in `/root/.ssh/` so when writing docker, you can take the template in challenge folder and build with command below:
 
 ```bash
@@ -26,5 +27,6 @@ After it built successful, we can run challenge docker with the following comman
 docker compose up --detach
 ```
 
+- Building ForcAD
 
-
+In this lab, I designed the checker to ssh as root to service docker and update flag in that so we will need to move the sshkey from `/root/.ssh/id_rsa` to `/ForcAD/id_rsa` that it can include the key to checker container and the checker can work!
