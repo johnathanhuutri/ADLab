@@ -26,10 +26,10 @@ basic_setup() {
 	apt-get update
 	apt-get remove -y unattended-upgrades
 	apt-get install -y build-essential openvpn unzip python3-pip
-	ssh-keygen -q -t rsa -N '' <<< $'\ny' >/dev/null 2>&1
+	ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa <<<y >/dev/null 2>&1
 }
 
-install_docker() {
+docker_installation() {
 	printf "\n\n\n${RED}### Docker installation ###${NC}\n"
 	# Add Docker's official GPG key:
 	apt-get update --fix-missing
@@ -47,7 +47,20 @@ install_docker() {
 	apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 }
 
-setup_network() {
+forcad_installation() {
+	printf "\n\n\n${RED}### ForcAD installation ###${NC}\n"
+	mv ForcAD /
+	cd /ForcAD
+	cp /root/.ssh/id_rsa ./checkers
+	chmod 644 ./checkers/id_rsa
+	pip3 install -r cli/requirements.txt
+	sed -i "s/docker-compose/docker', 'compose/g" cli/utils.py
+	sed -i "s/docker-compose/docker', 'compose/g" cli/base/print_tokens.py
+	sed -i "s/docker-compose/docker', 'compose/g" cli/base/reset.py
+	cd -
+}
+
+network_configuration() {
 	printf "\n\n\n${RED}### Network configuration ###${NC}\n"
 	echo -e \
 		"network:\n" \
@@ -63,44 +76,17 @@ setup_network() {
 	chmod 600 "/etc/netplan/01-network-manager-all.yaml"
 	netplan apply
 }
-setup_forcad() {
-	printf "\n\n\n${RED}### ForcAD installation ###${NC}\n"
-	unzip ForcAD.zip -d /
-	cd /ForcAD
-	cp /root/.ssh/id_rsa .
-	pip3 install -r cli/requirements.txt
-	sed -i "s/docker-compose/docker', 'compose/g" cli/utils.py
-	sed -i "s/docker-compose/docker', 'compose/g" cli/base/print_tokens.py
-	sed -i "s/docker-compose/docker', 'compose/g" cli/base/reset.py
-	sed -i "s/COPY .\/checkers \/checkers/COPY .\/checkers \/checkers\n\nRUN mkdir -p \/nonexistent\/.ssh\nCOPY id_rsa \/nonexistent\/.ssh\nRUN chown -R nobody:nogroup \/nonexistent\/.ssh \&\& chmod 600 \/nonexistent\/.ssh\/id_rsa/g" /ForcAD/docker_config/celery/Dockerfile
-	cd -
+
+service_configuration() {
+	mv services /
+	cd /services
+	docker compose build --build-arg SSHKEY="`cat /root/.ssh/id_rsa`"
+	docker compose up --detach
 }
 
 basic_setup
-install_docker
-setup_network
-setup_forcad
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+docker_installation
+forcad_installation
+network_configuration
+#service_configuration
 
