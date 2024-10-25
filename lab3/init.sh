@@ -96,5 +96,5 @@ basic_setup
 docker_installation
 forcad_installation
 network_configuration
-#service_configuration
+service_configuration
 checker_configuration
