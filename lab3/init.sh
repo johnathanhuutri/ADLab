@@ -5,15 +5,21 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
-if [ ! -f "ForcAD.zip" ];
+if [ ! -d "ForcAD" ];
 then
-	echo "Missing ForcAD.zip"
+	echo "Missing ForcAD folder"
 	exit
 fi
 
-if [ ! -d "services.zip" ];
+if [ ! -d "services" ];
 then
-	echo "Missing service.zip"
+	echo "Missing service folder"
+	exit
+fi
+
+if [ ! -d "checkers" ];
+then
+	echo "Missing checkers folder"
 	exit
 fi
 
@@ -49,7 +55,7 @@ docker_installation() {
 
 forcad_installation() {
 	printf "\n\n\n${RED}### ForcAD installation ###${NC}\n"
-	unzip ForcAD.zip -d /
+	mv ForcAD /
 	cd /ForcAD
 	cp /root/.ssh/id_rsa ./checkers
 	chmod 644 ./checkers/id_rsa
@@ -75,11 +81,13 @@ network_configuration() {
 }
 
 service_configuration() {
+	printf "\n\n\n${RED}### Service configuration ###${NC}\n"
 	mv services /
 	cd /services
 }
 
 checker_configuration() {
+	printf "\n\n\n${RED}### Checker configuration ###${NC}\n"
 	find checkers -mindepth 1 -type d -exec chmod +x "{}/checker.py" \;
 	cp -r checkers /ForcAD
 }
