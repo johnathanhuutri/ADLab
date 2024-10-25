@@ -4,9 +4,9 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ARG SSHKEY
 
-RUN apt-get update
-RUN apt-get install -y openssh-server
-RUN apt-get clean
+RUN apt-get update && \
+    apt-get install -y openssh-server apache2 php libapache2-mod-php php-curl && \
+    apt-get clean
 
 RUN useradd -m ctf && \
 	echo "ctf:ctf" | chpasswd && \
@@ -21,14 +21,20 @@ RUN touch /flag2 && \
 	chmod +xs /getflag
 ################################################
 
-RUN apt-get update
-RUN apt-get install -y apache2 php
-RUN apt-get clean
+# Enable mod_rewrite for Apache
+RUN a2enmod rewrite
 
-ADD share/entrypoint.sh /entrypoint.sh
-ADD share/html/ /var/www/html/
-RUN rm /var/www/html/index.html
-RUN chown -R ctf:ctf /var/www/html/
+RUN rm -rf /var/www/html/*
+# Copy your application code into the container
+COPY ./share/html/ /var/www/html
+COPY ./share/php.ini /etc/php/8.1/apache2/
+COPY ./share/entrypoint.sh /entrypoint.sh
+# Set proper permissions for the Apache server
+RUN chown -R www-data:www-data /var/www/html && \
+    chmod -R 755 /var/www/html
 RUN chmod +x /entrypoint.sh
 
+# Start Apache in the foreground
 CMD ["/entrypoint.sh"]
+
+

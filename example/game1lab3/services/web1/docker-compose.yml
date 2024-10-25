@@ -1,16 +1,13 @@
 services:
   team1web1:
     build: .
-    hostname: team1web1
+    hostname: web1team1
     ports:
       - "10101:80"
       - "10121:22"
-    restart: always
   team2web1:
     build: .
-    hostname: team2web1
+    hostname: web1team2
     ports:
       - "10201:80"
       - "10221:22"
-    restart: always
-      

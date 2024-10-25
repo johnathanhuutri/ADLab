@@ -77,15 +77,11 @@ network_configuration() {
 service_configuration() {
 	mv services /
 	cd /services
-	docker compose build --build-arg SSHKEY="`cat /root/.ssh/id_rsa`"
-	docker compose up --detach
 }
 
 checker_configuration() {
-	unzip services.zip -d /
-	cd /services
-	docker compose build --build-arg SSHKEY="`cat /root/.ssh/id_rsa`"
-	docker compose up --detach
+	find checkers -mindepth 1 -type d -exec chmod +x "{}/checker.py" \;
+	cp -r checkers /ForcAD
 }
 
 basic_setup
@@ -93,4 +89,4 @@ docker_installation
 forcad_installation
 network_configuration
 #service_configuration
-
+checker_configuration

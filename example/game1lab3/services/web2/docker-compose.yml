@@ -27,4 +27,4 @@ services:
       MYSQL_DATABASE: CHALLENGE
       MYSQL_ROOT_PASSWORD: ctf
     volumes:
-      - ./db/init.sql:/docker-entrypoint-initdb.d/db.sql
+      - ./share/init.sql:/docker-entrypoint-initdb.d/db.sql

@@ -29,7 +29,7 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 RUN a2enmod rewrite
 RUN sed -i "s/#\!\/bin\/sh/#\!\/bin\/sh\nservice ssh start/g" /usr/local/bin/docker-php-entrypoint
 
-ADD src/ /var/www/html/
+COPY share/src/ /var/www/html/
 RUN chown -R www-data:www-data /var/www/html
 RUN chmod -R 775 /var/www/html
 RUN chmod -R 777 /var/www/html/uploads
