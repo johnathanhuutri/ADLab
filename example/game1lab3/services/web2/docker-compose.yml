@@ -1,0 +1,30 @@
+services:
+  team1web2:
+    build: .
+    hostname: team1web2
+    ports:
+      - "10102:80"
+      - "10122:22"
+    depends_on:
+      - mysql-db
+    restart: always
+  team2web2:
+    build: .
+    hostname: team2web2
+    ports:
+      - "10202:80"
+      - "10222:22"
+    depends_on:
+      - mysql-db
+    restart: always
+
+  mysql-db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_USER: ctf
+      MYSQL_PASSWORD: ctf
+      MYSQL_DATABASE: CHALLENGE
+      MYSQL_ROOT_PASSWORD: ctf
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/db.sql
