@@ -1,6 +1,7 @@
 # Attack & Defense Lab (module 2)
 
 > 1 machine for checker, scoreboard
+
 > 2 machines for teams containing services
 
 ## Application
