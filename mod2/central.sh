@@ -1,31 +1,28 @@
 #!/bin/bash
 
-if [ "$EUID" -ne 0 ]
-	then echo "Please run as sudo"
-	exit
-fi
-
-if [ ! -d "ForcAD" ];
-then
-	echo "Missing ForcAD folder"
-	exit
-fi
-
-if [ ! -d "services" ];
-then
-	echo "Missing service folder"
-	exit
-fi
-
-if [ ! -d "checkers" ];
-then
-	echo "Missing checkers folder"
-	exit
-fi
-
 RED='\033[0;31m'
 NC='\033[0m' # No Color
+checker_url=""
+network_1=""
+network_2=""
+
 export EASYRSA_BATCH=1
+
+usage() {
+	cat <<EOF
+Usage: $0 [OPTION]... -c URL --ip1 IP --ip2 IP
+
+Options:
+  -c, --checker-url             link to download services.zip
+  --ip1                         ip that is in the same network of team1
+  --ip2                         ip that is in the same network of team2
+  -h, --help                    display help message and exit
+
+Example: $0 -c https://github.com/ --ip1 192.168.1.1 --ip2 192.168.2.1
+
+EOF
+	exit
+}
 
 basic_setup() {
 	printf "\n\n\n${RED}### Basic setup ###${NC}\n"
@@ -55,12 +52,18 @@ docker_installation() {
 
 forcad_installation() {
 	printf "\n\n\n${RED}### ForcAD installation ###${NC}\n"
-	mv ForcAD /
+	cd /tmp
+
+	wget https://github.com/johnathanhuutri/ADLab_v2/releases/download/v1.4.0/ForcAD.zip -O ForcAD.zip
+	unzip ForcAD.zip -d /
+	wget $checker_url -O checkers.zip
+	unzip checkers.zip -d /ForcAD
+
 	cd /ForcAD
+	find checkers -mindepth 1 -type d -exec chmod +x "{}/checker.py" \;
 	cp /root/.ssh/id_rsa ./checkers
 	chmod 644 ./checkers/id_rsa
 	pip3 install -r cli/requirements.txt
-	cd -
 }
 
 network_configuration() {
@@ -75,30 +78,68 @@ network_configuration() {
 		"    enp2s2:\n" \
 		"      optional: true\n" \
 		"      dhcp4: false\n" \
-		"      addresses: [192.168.1.1/24]\n" \
+		"      addresses: [$network_1/24]\n" \
 		"    enp2s3:\n" \
 		"      optional: true\n" \
 		"      dhcp4: false\n" \
-		"      addresses: [192.168.2.1/24]\n" \
+		"      addresses: [$network_2/24]\n" \
 		> "/etc/netplan/01-network-manager-all.yaml"
 	chmod 600 "/etc/netplan/01-network-manager-all.yaml"
 	netplan apply
 }
 
-service_configuration() {
-	printf "\n\n\n${RED}### Service configuration ###${NC}\n"
-	mv services /
-}
-
 checker_configuration() {
 	printf "\n\n\n${RED}### Checker configuration ###${NC}\n"
-	find checkers -mindepth 1 -type d -exec chmod +x "{}/checker.py" \;
-	cp -r checkers /ForcAD
 }
+
+
+if [ "$EUID" -ne 0 ]
+	then echo "Please run as sudo"
+	exit
+fi
+
+while getopts ":hc:-:" opt; do
+	case $opt in
+		h)
+			usage
+			;;
+		c)
+			checker_url=$OPTARG
+			;;
+		-) # Handle long options
+			case $OPTARG in
+				ip1)
+					network_1="${!OPTIND}" # Next argument is the value
+					OPTIND=$((OPTIND + 1))	 # Shift to next option
+					;;
+				ip2)
+					network_2="${!OPTIND}" # Next argument is the value
+					OPTIND=$((OPTIND + 1))	# Shift to next option
+					;;
+				*)
+					echo "Invalid option --$OPTARG"
+					usage
+					;;
+			esac
+			;;
+		\?) # Invalid short option
+			echo "Invalid option: -$OPTARG"
+			usage
+			;;
+		:) # Missing argument
+			echo "Option -$OPTARG requires an argument."
+			usage
+			;;
+	esac
+done
+
+if [[ -z $checker_url || -z $network_1 || -z $network_2 ]]; then
+	echo "Error: Missing required arguments"
+	usage
+fi
 
 basic_setup
 docker_installation
 forcad_installation
 network_configuration
-service_configuration
-checker_configuration
+cd ~
