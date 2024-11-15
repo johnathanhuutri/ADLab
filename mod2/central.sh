@@ -3,8 +3,10 @@
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 checker_url=""
-network_1=""
-network_2=""
+ifname_1=""
+ifname_2=""
+ip_address_1=""
+ip_address_2=""
 
 export EASYRSA_BATCH=1
 
@@ -14,11 +16,13 @@ Usage: $0 [OPTION]... -c URL --ip1 IP --ip2 IP
 
 Options:
   -c, --checker-url             link to download services.zip
+  --if1                         interface name to team1
   --ip1                         ip that is in the same network of team1
+  --if2                         interface name to team2
   --ip2                         ip that is in the same network of team2
   -h, --help                    display help message and exit
 
-Example: $0 -c https://github.com/ --ip1 192.168.1.1 --ip2 192.168.2.1
+Example: $0 -c https://github.com/ --if1 ens34 --ip1 192.168.1.1 --if2 ens38 --ip2 192.168.2.1
 
 EOF
 	exit
@@ -76,11 +80,11 @@ network_configuration() {
 		"    enp2s1:\n" \
 		"      optional: true\n" \
 		"      dhcp4: true\n" \
-		"    enp2s2:\n" \
+		"    $ifname_1:\n" \
 		"      optional: true\n" \
 		"      dhcp4: false\n" \
 		"      addresses: [$network_1/24]\n" \
-		"    enp2s3:\n" \
+		"    $ifname_2:\n" \
 		"      optional: true\n" \
 		"      dhcp4: false\n" \
 		"      addresses: [$network_2/24]\n" \
@@ -116,6 +120,14 @@ while getopts ":hc:-:" opt; do
 				ip2)
 					network_2="${!OPTIND}" # Next argument is the value
 					OPTIND=$((OPTIND + 1))	# Shift to next option
+					;;
+				if1)
+					ifname_1="${!OPTIND}" # Next argument is the value
+					OPTIND=$((OPTIND + 1))	 # Shift to next option
+					;;
+				if2)
+					ifname_2="${!OPTIND}" # Next argument is the value
+					OPTIND=$((OPTIND + 1))	 # Shift to next option
 					;;
 				*)
 					echo "Invalid option --$OPTARG"
