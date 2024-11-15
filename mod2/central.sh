@@ -75,19 +75,21 @@ network_configuration() {
 	sysctl -w net.ipv4.ip_forward=1
 	echo -e \
 		"network:\n" \
-		"  version: 2\n" \
-		"  ethernets:\n" \
-		"    enp2s1:\n" \
-		"      optional: true\n" \
-		"      dhcp4: true\n" \
-		"    $ifname_1:\n" \
-		"      optional: true\n" \
-		"      dhcp4: false\n" \
-		"      addresses: [$network_1/24]\n" \
-		"    $ifname_2:\n" \
-		"      optional: true\n" \
-		"      dhcp4: false\n" \
-		"      addresses: [$network_2/24]\n" \
+		"	version: 2\n" \
+		"	ethernets:\n" \
+		"		lo:\n" \
+		"			addresses: [192.168.0.254/24]\n" \
+		"		enp2s1:\n" \
+		"			optional: true\n" \
+		"			dhcp4: true\n" \
+		"		$ifname_1:\n" \
+		"			optional: true\n" \
+		"			dhcp4: false\n" \
+		"			addresses: [$network_1/24]\n" \
+		"		$ifname_2:\n" \
+		"			optional: true\n" \
+		"			dhcp4: false\n" \
+		"			addresses: [$network_2/24]\n" \
 		> "/etc/netplan/01-network-manager-all.yaml"
 	chmod 600 "/etc/netplan/01-network-manager-all.yaml"
 	netplan apply
