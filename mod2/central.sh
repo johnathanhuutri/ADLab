@@ -13,7 +13,7 @@ export EASYRSA_BATCH=1
 
 usage() {
 	cat <<EOF
-Usage: $0 [OPTION]... -f URL -c URL --ip1 IP --ip2 IP
+Usage: $0 [OPTION]... -f FORCAD-URL -c CHECKER-URL --if1 IFNAME1 --ip1 IP1 --if2 IFNAME2 --ip2 IP2
 
 Options:
   -f, --forcad-url              link to download ForcAD.zip
@@ -24,7 +24,7 @@ Options:
   --ip2                         ip that is in the same network of team2
   -h, --help                    display help message and exit
 
-Example: $0 -c https://github.com/ --if1 ens34 --ip1 192.168.1.1 --if2 ens38 --ip2 192.168.2.1
+Example: $0 -f https://github.com/ -c https://github.com/ --if1 ens34 --ip1 10.254.1.1 --if2 ens38 --ip2 10.254.2.1
 
 EOF
 	exit
@@ -63,7 +63,7 @@ forcad_installation() {
 	wget $forcad_url -O ForcAD.zip
 	unzip ForcAD.zip -d /
 	wget $checker_url -O checkers.zip
-	unzip checkers.zip -o -d /ForcAD
+	unzip -o checkers.zip -d /ForcAD
 
 	cd /ForcAD
 	find checkers -mindepth 1 -type d -exec chmod +x "{}/checker.py" \;
@@ -79,7 +79,7 @@ network_configuration() {
     version: 2
     ethernets:
         lo:
-            addresses: [192.168.0.254/24]
+            addresses: [10.254.0.254/24]
         enp2s1:
             optional: true
             dhcp4: true

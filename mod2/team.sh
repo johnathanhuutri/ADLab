@@ -2,21 +2,23 @@
 
 RED='\033[0;31m'
 NC='\033[0m'				# No Color
-ip_address=""
+client_ip=""
+server_ip=""
 service_url=""
 
 export EASYRSA_BATCH=1
 
 usage() {
 	cat <<EOF
-Usage: $0 [OPTION]... -s URL -i IP
+Usage: $0 [OPTION]... -s SERVICE-URL --cip CLIENT-IP --sip SERVER-IP
 
 Options:
   -s, --service-url             link to download services.zip
-  -i, --ip                      ip address that you want to set
+  --cip                         client ip address (current machine's ip)
+  --sip                         server ip address (for default gateway)
   -h, --help                    display help message and exit
 
-Example: $0 -c https://github.com/ -i 192.168.1.10
+Example: $0 -s https://github.com/ --cip 10.254.1.2 --sip 10.254.1.1
 
 EOF
 	exit
@@ -51,15 +53,18 @@ docker_installation() {
 
 network_configuration() {
 	printf "\n\n\n${RED}### Network configuration ###${NC}\n"
-	echo -e \
-		"network:\n" \
-		"  version: 2\n" \
-		"  ethernets:\n" \
-		"    enp2s1:\n" \
-		"      optional: true\n" \
-		"      dhcp4: false\n" \
-		"      addresses: [${ip_address}/24]\n" \
-		> "/etc/netplan/01-network-manager-all.yaml"
+	echo """network:
+    version: 2
+    ethernets:
+        lo:
+            addresses: [10.254.0.254/24]
+        enp2s1:
+            optional: true
+            dhcp4: false
+            addresses: [$client_ip/24]
+            routes:
+              - to: default
+                via: $server_ip""" > "/etc/netplan/01-network-manager-all.yaml"
 	chmod 600 "/etc/netplan/01-network-manager-all.yaml"
 	netplan apply
 }
@@ -86,7 +91,7 @@ while getopts ":hs:i:-:" opt; do
 			service_url=$OPTARG
 			;;
 		i)
-			ip_address=$OPTARG
+			client_ip=$OPTARG
 			;;
 		-) # Handle long options
 			case $OPTARG in
@@ -95,7 +100,7 @@ while getopts ":hs:i:-:" opt; do
 					OPTIND=$((OPTIND + 1))	 # Shift to next option
 					;;
 				ip)
-					ip_address="${!OPTIND}" # Next argument is the value
+					client_ip="${!OPTIND}" # Next argument is the value
 					OPTIND=$((OPTIND + 1))	# Shift to next option
 					;;
 				*)
@@ -115,7 +120,7 @@ while getopts ":hs:i:-:" opt; do
 	esac
 done
 
-if [[ -z $service_url || -z $ip_address ]]; then
+if [[ -z $service_url || -z $client_ip ]]; then
 	echo "Error: Missing required arguments"
 	usage
 fi
