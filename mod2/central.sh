@@ -68,6 +68,7 @@ forcad_installation() {
 
 network_configuration() {
 	printf "\n\n\n${RED}### Network configuration ###${NC}\n"
+	sysctl -w net.ipv4.ip_forward=1
 	echo -e \
 		"network:\n" \
 		"  version: 2\n" \

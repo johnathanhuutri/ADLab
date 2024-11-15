@@ -11,9 +11,22 @@
 
 ## Machine Setup
 
-First, we will need to install 3 network adapter, first one is set to **NAT**, second one is set to **VMnet1** and second one is set to **VMnet2**:
+First, we will need to install 3 network adapter on **central** machine:
+- `Network Adapter` is set to **NAT**
+- `Network Adapter 2` is set to **VMnet1**
+- `Network Adapter 3` is set to **VMnet2**:
 
 ![](images/central-vmware-adapter.png)
+
+Now we will config `Network Adapter` of team 1 into **VMnet1**:
+
+![](images/team1-vmware-adapter.png)
+
+Then we will config `Network Adapter` of team 2 into **VMnet2**:
+
+![](images/team2-vmware-adapter.png)
+
+
 
 The script **`init.sh`** will config the **`Network Adapter 2`**'s ip to **`192.168.0.1/24`** so that bot can use this ip to check services.
 
