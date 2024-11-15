@@ -13,7 +13,7 @@
 
 First, we will need to install 3 network adapter, first one is set to **NAT**, second one is set to **VMnet1** and second one is set to **VMnet2**:
 
-![](.images/central-vmware-adapter.png)
+![](images/central-vmware-adapter.png)
 
 The script **`init.sh`** will config the **`Network Adapter 2`**'s ip to **`192.168.0.1/24`** so that bot can use this ip to check services.
 
