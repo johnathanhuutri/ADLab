@@ -75,6 +75,7 @@ forcad_installation() {
 network_configuration() {
 	printf "\n\n\n${RED}### Network configuration ###${NC}\n"
 	sysctl -w net.ipv4.ip_forward=1
+	rm -rf /etc/netplan/*
 	echo """network:
     version: 2
     ethernets:
@@ -90,7 +91,7 @@ network_configuration() {
         $ifname_2:
             optional: true
             dhcp4: false
-            addresses: [$network_2/24]""" > "/etc/netplan/01-network-manager-all.yaml"
+            addresses: [$network_2/24]""" > "/etc/netplan/01-server-network.yaml"
 	chmod 600 "/etc/netplan/01-network-manager-all.yaml"
 	netplan apply
 }

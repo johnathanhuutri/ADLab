@@ -26,6 +26,41 @@ Then we will config `Network Adapter` of team 2 into **VMnet2**:
 
 ![](images/team2-vmware-adapter.png)
 
+Then we go to `Edit -> Virtual Network Editor...`:
+
+![](images/path-virtual-network-editor.png)
+
+and click `Change Settings` to config **VMnet1** and **VMnet2**:
+
+![](images/virtual-network-editor-change-settings.png)
+
+Now we will want 2 vmnets have both **Host connection** connected and **DHCP** enabled by ticking at 2 boxes:
+
+![](images/virtual-network-editor-tick-box.png)
+
+and it should look like this:
+
+![](images/virtual-network-editor-result.png)
+
+That's all configuration we needed. Now let's install necessary stuff!
+
+### Installation
+
+
+
+
+
+With option **Host connection** connected, our host machine can ping to vmware of team 1 and team 2 with ip assigned by DHCP:
+
+![](images/team1-ip-dhcp.png)
+
+![](images/team1-ip-dhcp-ping.png)
+
+Now we will want to change that ip to fit our use, create a file called `01-team-network.yaml` on your host machine with content below:
+
+```
+
+```
 
 
 The script **`init.sh`** will config the **`Network Adapter 2`**'s ip to **`192.168.0.1/24`** so that bot can use this ip to check services.
