@@ -2,6 +2,7 @@
 
 RED='\033[0;31m'
 NC='\033[0m' # No Color
+forcad_url=""
 checker_url=""
 ifname_1=""
 ifname_2=""
@@ -12,9 +13,10 @@ export EASYRSA_BATCH=1
 
 usage() {
 	cat <<EOF
-Usage: $0 [OPTION]... -c URL --ip1 IP --ip2 IP
+Usage: $0 [OPTION]... -f URL -c URL --ip1 IP --ip2 IP
 
 Options:
+  -f, --forcad-url              link to download ForcAD.zip
   -c, --checker-url             link to download services.zip
   --if1                         interface name to team1
   --ip1                         ip that is in the same network of team1
@@ -58,10 +60,10 @@ forcad_installation() {
 	printf "\n\n\n${RED}### ForcAD installation ###${NC}\n"
 	cd /tmp
 
-	wget https://github.com/johnathanhuutri/ADLab_v2/releases/download/v1.4.0/ForcAD.zip -O ForcAD.zip
+	wget $forcad_url -O ForcAD.zip
 	unzip ForcAD.zip -d /
 	wget $checker_url -O checkers.zip
-	unzip checkers.zip -d /ForcAD
+	unzip checkers.zip -o -d /ForcAD
 
 	cd /ForcAD
 	find checkers -mindepth 1 -type d -exec chmod +x "{}/checker.py" \;
@@ -73,24 +75,22 @@ forcad_installation() {
 network_configuration() {
 	printf "\n\n\n${RED}### Network configuration ###${NC}\n"
 	sysctl -w net.ipv4.ip_forward=1
-	echo -e \
-		"network:\n" \
-		"	version: 2\n" \
-		"	ethernets:\n" \
-		"		lo:\n" \
-		"			addresses: [192.168.0.254/24]\n" \
-		"		enp2s1:\n" \
-		"			optional: true\n" \
-		"			dhcp4: true\n" \
-		"		$ifname_1:\n" \
-		"			optional: true\n" \
-		"			dhcp4: false\n" \
-		"			addresses: [$network_1/24]\n" \
-		"		$ifname_2:\n" \
-		"			optional: true\n" \
-		"			dhcp4: false\n" \
-		"			addresses: [$network_2/24]\n" \
-		> "/etc/netplan/01-network-manager-all.yaml"
+	echo """network:
+    version: 2
+    ethernets:
+        lo:
+            addresses: [192.168.0.254/24]
+        enp2s1:
+            optional: true
+            dhcp4: true
+        $ifname_1:
+            optional: true
+            dhcp4: false
+            addresses: [$network_1/24]
+        $ifname_2:
+            optional: true
+            dhcp4: false
+            addresses: [$network_2/24]""" > "/etc/netplan/01-network-manager-all.yaml"
 	chmod 600 "/etc/netplan/01-network-manager-all.yaml"
 	netplan apply
 }
@@ -105,13 +105,16 @@ if [ "$EUID" -ne 0 ]
 	exit
 fi
 
-while getopts ":hc:-:" opt; do
+while getopts ":hf:c:-:" opt; do
 	case $opt in
 		h)
 			usage
 			;;
 		c)
 			checker_url=$OPTARG
+			;;
+		f)
+			forcad_url=$OPTARG
 			;;
 		-) # Handle long options
 			case $OPTARG in
@@ -148,7 +151,7 @@ while getopts ":hc:-:" opt; do
 	esac
 done
 
-if [[ -z $checker_url || -z $network_1 || -z $network_2 ]]; then
+if [[ -z $checker_url || -z $ifname_1 || -z $network_1 || -z $ifname_2 || -z $network_2 ]]; then
 	echo "Error: Missing required arguments"
 	usage
 fi
