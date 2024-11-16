@@ -5,10 +5,10 @@
 # DHCP Pool: https://serverfault.com/a/1013100
 
 ### Change this #########################################################
-SERVER_POOL='10.10.0.0 255.255.255.0'               # '<ip> <subnetmask>'
-DHCP_POOL='10.10.0.100 10.10.0.254'                 # '<ip-from> <ip-to>'
-PROXY1_IP='10.10.0.10 255.255.255.0'                # '<ip> <subnetmask>'
-PROXY2_IP='10.10.0.20 255.255.255.0'                # '<ip> <subnetmask>'
+SERVER_POOL='172.16.10.0 255.255.255.0'               # '<ip> <subnetmask>'
+DHCP_POOL='172.16.10.100 172.16.10.254'               # '<ip-from> <ip-to>'
+PROXY1_IP='172.16.10.10 255.255.255.0'                # '<ip> <subnetmask>'
+PROXY2_IP='172.16.10.20 255.255.255.0'                # '<ip> <subnetmask>'
 #########################################################################
 RED='\033[0;31m'
 NC='\033[0m' # No Color

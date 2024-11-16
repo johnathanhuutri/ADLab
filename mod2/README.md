@@ -9,7 +9,9 @@
 - [Docker](https://docs.docker.com/engine/install/ubuntu/)
 - Openvpn
 
-## Machine Setup
+## Setup
+
+### VMware configuration
 
 First, we will need to install 3 network adapter on **central** machine:
 - `Network Adapter` is set to **NAT**
@@ -46,21 +48,82 @@ That's all configuration we needed. Now let's install necessary stuff!
 
 ### Installation
 
+On central, we already have access to Internet because of NAT adapter so let's install on central first. We will run the script `central.sh` with these required parameters:
 
+```bash
+./central.sh [OPTION]... -f FORCAD-URL -c CHECKER-URL --lo SERVER-IP --ip1 IP1 --ip2 IP2
+```
 
+Explanation:
+- `FORCAD-URL`: link to download ForcAD.zip
+- `CHECKER-URL`: link to download checkers.zip
+- `SERVER-IP`: ip of server to communicate with team1
+- `IP1`: ip of server to communicate with team1
+- `IP2`: ip of server to communicate with team2
 
+For example, below are interface names on central machine (`ens34` and `ens38`):
 
-With option **Host connection** connected, our host machine can ping to vmware of team 1 and team 2 with ip assigned by DHCP:
+![](images/central-adapter-name.png)
+
+I will assume team 1's network is `10.254.1.0/24` and team 2's network is `10.254.2.0/24` so I can set central ip to `10.254.1.1` and `10.254.2.1` for `ens34` and `ens38`, respectively. For `ForcAD.zip` and `checkers.zip`, you can get it from release section. Below is a full command running `central.sh` to setup with `ForcAD.zip` and `checkers.zip` I uploaded to Mediafire for public access (you will need to generate new link for that):
+
+```bash
+./central.sh -f https://download1528.mediafire.com/h4az9jqmejfg6olNoEZ_EnD9qNJBY_IqkKadXd23l8ZFyjHepzJiwqGUZ2V6fbuDJC2wMD68Jw25DKiFfN7acEY-AV5zLDjdGhFEFISJQFkN0rVFd8HBjd76EPu0O8CebQxzFQV8fMU72d6OanVW1reTdX1qgUncI_QuhgQ0ug/dxj0c3wt67tjcr8/ForcAD.zip -c https://download1479.mediafire.com/zankd1kz41wgQ8zcV-MnWa4WGUco7hWMYPUC5052p5EgQZKjBRATq0w0XFx1Aki6LnraSsHNlXQOrguGJm2hUe3Aq3xumBuuRuzO-ckNEroR-Y9OHwhSfhWlyo2qsd3hE45hdYR3Nh9vRST9uAh0jmCHEanSHLhjLOlaUmHuJA/39u04c47qcr4h0j/checkers_1.zip --if1 ens34 --ip1 10.254.1.1 --if2 ens38 --ip2 10.254.2.1
+```
+
+If everything works fine, central machine is now set. Let's setup on team machine!
+
+With option **Host connection** connected we have configured previously, our host machine can ping to vmware of team 1 and team 2 with ip assigned by DHCP:
 
 ![](images/team1-ip-dhcp.png)
 
 ![](images/team1-ip-dhcp-ping.png)
 
-Now we will want to change that ip to fit our use, create a file called `01-team-network.yaml` on your host machine with content below:
+Now we will want to change that ip to fit our use. First, we will `ssh` to team machine and delete all files in `/etc/netplan/`:
 
+```bash
+sudo rm -rf /etc/netplan/*
 ```
 
+Next, we will create a new network config file at this path `/etc/netplan/01-team-network.yaml` with content below:
+
 ```
+network:
+    version: 2
+    ethernets:
+        enp2s1:
+            optional: true
+            dhcp4: false
+            addresses: [<CLIENT-IP>/24]
+            routes:
+              - to: default
+                via: <SERVER-IP>
+```
+
+Remember to replace `<CLIENT-IP>` and `<SERVER-IP>` with the one you choose. Then we will set permission for that file and update ip with our new config:
+
+```bash
+sudo chmod 600 "/etc/netplan/01-team-network.yaml"
+sudo netplan apply
+```
+
+For example, the below config will change ip to `10.254.1.2` and default gateway to `10.254.1.1`:
+
+```
+network:
+    version: 2
+    ethernets:
+        enp2s1:
+            optional: true
+            dhcp4: false
+            addresses: [10.254.1.2/24]
+            routes:
+              - to: default
+                via: 10.254.1.1
+```
+
+And when you 
+
 
 
 The script **`init.sh`** will config the **`Network Adapter 2`**'s ip to **`192.168.0.1/24`** so that bot can use this ip to check services.

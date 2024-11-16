@@ -24,8 +24,25 @@ EOF
 	exit
 }
 
+network_configuration() {
+	printf "\n\n\n$RED### Network configuration ###$NC\n"
+	echo """network:
+    version: 2
+    ethernets:
+        enp2s1:
+            optional: true
+            dhcp4: false
+            addresses: [$client_ip/24]
+            routes:
+              - to: default
+                via: $server_ip""" > "/etc/netplan/01-network-manager-all.yaml"
+	chmod 600 "/etc/netplan/01-network-manager-all.yaml"
+	netplan apply
+	sleep 3
+}
+
 basic_setup() {
-	printf "\n\n\n${RED}### Basic setup ###${NC}\n"
+	printf "\n\n\n$RED### Basic setup ###$NC\n"
 	apt-get update
 	apt-get remove -y unattended-upgrades
 	apt-get install -y build-essential openvpn unzip python3-pip
@@ -34,7 +51,7 @@ basic_setup() {
 }
 
 docker_installation() {
-	printf "\n\n\n${RED}### Docker installation ###${NC}\n"
+	printf "\n\n\n$RED### Docker installation ###$NC\n"
 	# Add Docker's official GPG key:
 	apt-get update --fix-missing
 	apt-get install -y ca-certificates curl
@@ -51,26 +68,8 @@ docker_installation() {
 	apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 }
 
-network_configuration() {
-	printf "\n\n\n${RED}### Network configuration ###${NC}\n"
-	echo """network:
-    version: 2
-    ethernets:
-        lo:
-            addresses: [10.254.0.254/24]
-        enp2s1:
-            optional: true
-            dhcp4: false
-            addresses: [$client_ip/24]
-            routes:
-              - to: default
-                via: $server_ip""" > "/etc/netplan/01-network-manager-all.yaml"
-	chmod 600 "/etc/netplan/01-network-manager-all.yaml"
-	netplan apply
-}
-
 service_configuration() {
-	printf "\n\n\n${RED}### Service configuration ###${NC}\n"
+	printf "\n\n\n$RED### Service configuration ###$NC\n"
 	cd /tmp
 	wget $service_url -O services.zip
 	unzip services.zip -d /
@@ -125,8 +124,8 @@ if [[ -z $service_url || -z $client_ip ]]; then
 	usage
 fi
 
+network_configuration
 basic_setup
 docker_installation
-network_configuration
 service_configuration
 cd ~
