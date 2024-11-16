@@ -74,9 +74,9 @@ network_configuration() {
 	printf "\n\n\n$RED### Network configuration ###$NC\n"
 	sysctl -w net.ipv4.ip_forward=1
 	iptables -P FORWARD ACCEPT
-	iptables -I FORWARD -i enp2p2 -o enp2p6 -j DROP
-	iptables -I FORWARD -i enp2p6 -o enp2p2 -j DROP
-	iptables -t nat -I POSTROUTING -j MASQUERADE
+	iptables -I FORWARD -i ens34 -o ens38 -j DROP
+	iptables -I FORWARD -i ens38 -o ens34 -j DROP
+	iptables -t nat -I POSTROUTING -o ens33 -j MASQUERADE
 
 	rm -rf /etc/netplan/*
 	echo """network:
@@ -84,14 +84,16 @@ network_configuration() {
     ethernets:
         lo:
             addresses: [$ip_lo/24]
-        enp2s1:
+        ens33:
             optional: true
             dhcp4: true
-        enp2s2:
+            nameservers:
+                addresses: [8.8.8.8, 8.8.4.4]
+        ens34:
             optional: true
             dhcp4: false
             addresses: [$ip_1/24]
-        enp2s6:
+        ens38:
             optional: true
             dhcp4: false
             addresses: [$ip_2/24]""" > "/etc/netplan/01-server-network.yaml"

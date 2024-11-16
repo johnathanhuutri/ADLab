@@ -24,6 +24,25 @@ EOF
 	exit
 }
 
+network_configuration() {
+	printf "\n\n\n$RED### Network configuration ###$NC\n"
+	rm -rf /etc/netplan/*
+	echo """network:
+    version: 2
+    ethernets:
+        ens33:
+            optional: true
+            dhcp4: true
+            addresses: [$client_ip/24]
+            routes:
+              - to: default
+                via: $server_ip
+            nameservers:
+                addresses: [8.8.8.8, 8.8.4.4]""" > "/etc/netplan/01-client-network.yaml"
+	chmod 600 "/etc/netplan/01-client-network.yaml"
+	netplan apply
+}
+
 basic_setup() {
 	printf "\n\n\n$RED### Basic setup ###$NC\n"
 	apt-get update
@@ -56,23 +75,6 @@ service_configuration() {
 	cd /tmp
 	wget $service_url -O services.zip
 	unzip services.zip -d /
-}
-
-network_configuration() {
-	printf "\n\n\n$RED### Network configuration ###$NC\n"
-	rm -rf /etc/netplan/*
-	echo """network:
-    version: 2
-    ethernets:
-        enp2s1:
-            optional: true
-            dhcp4: true
-            addresses: [$client_ip/24]
-            routes:
-              - to: default
-                via: $server_ip""" > "/etc/netplan/01-client-network.yaml"
-	chmod 600 "/etc/netplan/01-client-network.yaml"
-	netplan apply
 }
 
 
