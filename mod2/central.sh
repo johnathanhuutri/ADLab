@@ -76,7 +76,7 @@ network_configuration() {
 	iptables -P FORWARD ACCEPT
 	iptables -I FORWARD -i enp2p2 -o enp2p6 -j DROP
 	iptables -I FORWARD -i enp2p6 -o enp2p2 -j DROP
-	iptables -t nat -I POSTROUTING MASQUERADE
+	iptables -t nat -I POSTROUTING -j MASQUERADE
 
 	rm -rf /etc/netplan/*
 	echo """network:
@@ -91,11 +91,11 @@ network_configuration() {
             optional: true
             dhcp4: false
             addresses: [$ip_1/24]
-        enp2s2:
+        enp2s6:
             optional: true
             dhcp4: false
             addresses: [$ip_2/24]""" > "/etc/netplan/01-server-network.yaml"
-	chmod 600 "/etc/netplan/01-network-manager-all.yaml"
+	chmod 600 "/etc/netplan/01-server-network.yaml"
 	netplan apply
 }
 

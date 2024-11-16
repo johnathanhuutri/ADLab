@@ -24,23 +24,6 @@ EOF
 	exit
 }
 
-network_configuration() {
-	printf "\n\n\n$RED### Network configuration ###$NC\n"
-	echo """network:
-    version: 2
-    ethernets:
-        enp2s1:
-            optional: true
-            dhcp4: false
-            addresses: [$client_ip/24]
-            routes:
-              - to: default
-                via: $server_ip""" > "/etc/netplan/01-network-manager-all.yaml"
-	chmod 600 "/etc/netplan/01-network-manager-all.yaml"
-	netplan apply
-	sleep 3
-}
-
 basic_setup() {
 	printf "\n\n\n$RED### Basic setup ###$NC\n"
 	apt-get update
@@ -75,13 +58,30 @@ service_configuration() {
 	unzip services.zip -d /
 }
 
+network_configuration() {
+	printf "\n\n\n$RED### Network configuration ###$NC\n"
+	rm -rf /etc/netplan/*
+	echo """network:
+    version: 2
+    ethernets:
+        enp2s1:
+            optional: true
+            dhcp4: true
+            addresses: [$client_ip/24]
+            routes:
+              - to: default
+                via: $server_ip""" > "/etc/netplan/01-client-network.yaml"
+	chmod 600 "/etc/netplan/01-client-network.yaml"
+	netplan apply
+}
+
 
 if [ "$EUID" -ne 0 ]
 	then echo "Please run as sudo"
 	exit
 fi
 
-while getopts ":hs:i:-:" opt; do
+while getopts ":hs:-:" opt; do
 	case $opt in
 		h)
 			usage
@@ -89,17 +89,18 @@ while getopts ":hs:i:-:" opt; do
 		s)
 			service_url=$OPTARG
 			;;
-		i)
-			client_ip=$OPTARG
-			;;
 		-) # Handle long options
 			case $OPTARG in
 				service-url)
 					service_url="${!OPTIND}" # Next argument is the value
 					OPTIND=$((OPTIND + 1))	 # Shift to next option
 					;;
-				ip)
+				cip)
 					client_ip="${!OPTIND}" # Next argument is the value
+					OPTIND=$((OPTIND + 1))	# Shift to next option
+					;;
+				sip)
+					server_ip="${!OPTIND}" # Next argument is the value
 					OPTIND=$((OPTIND + 1))	# Shift to next option
 					;;
 				*)
@@ -119,7 +120,7 @@ while getopts ":hs:i:-:" opt; do
 	esac
 done
 
-if [[ -z $service_url || -z $client_ip ]]; then
+if [[ -z $service_url || -z $client_ip || -z $server_ip ]]; then
 	echo "Error: Missing required arguments"
 	usage
 fi
