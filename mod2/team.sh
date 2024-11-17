@@ -41,14 +41,14 @@ network_configuration() {
                 addresses: [8.8.8.8, 8.8.4.4]""" > "/etc/netplan/01-client-network.yaml"
 	chmod 600 "/etc/netplan/01-client-network.yaml"
 	netplan apply
+	sleep 3
 
 	# Check internet
-	wget -q --spider http://google.com
-
-	if [ $? -eq 0 ]; then
+	if ping -c 1 -W 2 8.8.8.8 > /dev/null 2>&1; then
 		echo "[*] Network config successful"
 	else
 		echo "[-] Network config failed"
+		exit
 	fi
 }
 

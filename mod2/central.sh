@@ -34,6 +34,8 @@ basic_setup() {
 	apt-get remove -y unattended-upgrades
 	apt-get install -y build-essential openvpn unzip python3-pip
 	ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa <<<y >/dev/null 2>&1
+	echo -en '#!/bin/bash\n\nif [ -z "$1" ] ; then\n\techo "Usage: set_iptables <routing.json>"\n\texit\nfi\n\nsudo iptables-save > /tmp/rules.v4\nsudo mv /tmp/rules.v4 /opt\n\nrule_count=$(( `jq ".rules | length" $1`-1 ))\nfor i in $(seq 0 $rule_count)\ndo\n\tlisten=`jq ".rules[$i].listen" $1`\n\tproxy_ip=`jq -r ".rules[$i].proxy_ip" $1`\n\tproxy_port=`jq ".rules[$i].proxy_port" $1`\n\n\techo -en "Checking PRE/POST rule: \\t"\n\tsudo iptables -t nat -C PREROUTING -p tcp --dport $listen -j DNAT --to-destination $proxy_ip:$proxy_port\n\tif [[ `echo $?` == 1 ]]\n\tthen\n\t\techo -en "Adding PRE/POST rule:   \\t$listen --> $proxy_ip:$proxy_port\\n"\n\t\tsudo iptables -t nat -I PREROUTING -p tcp --dport $listen -j DNAT --to-destination $proxy_ip:$proxy_port\n\t\tsudo iptables -t nat -I POSTROUTING -p tcp --dport $proxy_port -j SNAT --to-source 10.10.0.1\n\tfi\ndone' > /usr/local/bin/set_iptables
+	chmod +x /usr/local/bin/set_iptables
 }
 
 docker_installation() {
