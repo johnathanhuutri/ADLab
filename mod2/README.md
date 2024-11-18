@@ -141,7 +141,9 @@ So let's `scp` the script `team.sh` into machine, then `ssh` into it and we can 
 ./team.sh -s https://download1479.mediafire.com/25o8m8prcfjgcB-GE4TSzFmlAv7zU2Gdki_fY9jydo1cBScSvPXrDPFIxGWwEoc52Nfaw0tLfEkBjQRWSuN-9udgZ_5D1891J1Y6H0ltgo7aS8j9c5tm-036JGJ-Qp3Y-Ci6YSAKLyBODXAx97zqR6l0l5qZm1W-65sbS33qfSMXxQ/vszd1tzthg1fi3s/services_1.zip --cip 10.254.1.2 --sip 10.254.1.1
 ```
 
-If a challenge need to put flag via SSH, you can copy public key from central in `/root/.ssh/id_rsa.pub` into team machine. Now we want to make team machine public to the net, we will use openvpn to archive that. With team 1, transfer `/root/proxy1/files/proxy1.ovpn` from vps (which hosts openvpn-server) to team machine at `/etc/openvpn/client` and rename it from `proxy1.ovpn` into `proxy1.conf`:
+If a challenge need to put flag via SSH, you can copy public key from central in `/root/.ssh/id_rsa.pub` into team machine.
+
+Now we want to make team machine public to the net, we will use openvpn to achieve that. With team 1, transfer `/root/proxy1/files/proxy1.ovpn` from vps (which hosts openvpn-server) to team machine at `/etc/openvpn/client` and rename it from `proxy1.ovpn` into `proxy1.conf`:
 
 ![](images/vps-proxy1-ovpn-path.png)
 
@@ -157,7 +159,7 @@ Now team 1 has joined network of openvpn, we just need to download `client.ovpn`
 
 ![](images/ssh-to-proxy1.png)
 
-With team 2, do above steps as team 1.
+Setup for team 2 is similar as team 1 does.
 
 </p>
 </details>
