@@ -61,7 +61,7 @@ That's all we needed. Now let's setup necessary stuff!
 
 ------ **Central machine**
 
-On central, we already have access to Internet because of NAT adapter so let's install on central first. We will run the script `central.sh` with these required parameters:
+On central, we already have access to Internet because of NAT adapter so let's install on central first. We will transfer `central.sh` into machine using `scp` and then run that script with these required parameters:
 
 ```bash
 ./central.sh [OPTION]... -f FORCAD-URL -c CHECKER-URL --lo SERVER-IP --ip1 IP1 --ip2 IP2
@@ -80,44 +80,50 @@ For example, I will assume team 1's network is `10.254.1.0/24` and team 2's netw
 ./central.sh -f https://download1528.mediafire.com/h4az9jqmejfg6olNoEZ_EnD9qNJBY_IqkKadXd23l8ZFyjHepzJiwqGUZ2V6fbuDJC2wMD68Jw25DKiFfN7acEY-AV5zLDjdGhFEFISJQFkN0rVFd8HBjd76EPu0O8CebQxzFQV8fMU72d6OanVW1reTdX1qgUncI_QuhgQ0ug/dxj0c3wt67tjcr8/ForcAD.zip -c https://download1479.mediafire.com/zankd1kz41wgQ8zcV-MnWa4WGUco7hWMYPUC5052p5EgQZKjBRATq0w0XFx1Aki6LnraSsHNlXQOrguGJm2hUe3Aq3xumBuuRuzO-ckNEroR-Y9OHwhSfhWlyo2qsd3hE45hdYR3Nh9vRST9uAh0jmCHEanSHLhjLOlaUmHuJA/39u04c47qcr4h0j/checkers_1.zip --if1 ens34 --ip1 10.254.1.1 --if2 ens38 --ip2 10.254.2.1
 ```
 
-This script will also generate a new SSH key pair and put private key in `/ForcAD/checkers` just in case you need it. Now when we want to config routing so that 2 teams can communicate with each other via central machine, there is a customized script called `iptables_config` and a file `routing.json` (data is in json format). Here is an example config of `routing.json`:
+> This script will also generate a new SSH key pair and put private key in `/ForcAD/checkers` just in case you need it.
+
+Now we will want central machine to route traffic from team 1 to team 2 and vice versa. The tool we will use is `nginx`. Below is an example for `/etc/nginx/nginx.conf` that you will want to modify:
 
 ```
-{
-	"rules": [
-		{
-			"listen": 9011,
-			"proxy_ip": "10.10.1.2",
-			"proxy_port": 9001
-		},
-		{
-			"listen": 9021,
-			"proxy_ip": "10.10.2.2",
-			"proxy_port": 9001
-		}
-	]
+worker_processes auto;
+pid /run/nginx.pid;
+include /etc/nginx/modules-enabled/*.conf;
+
+events {
+        worker_connections 768;
+}
+
+stream {
+    server {
+        listen 40101;
+        proxy_pass 10.10.1.2:9001;
+    }
+    server {
+        listen 40201;
+        proxy_pass 10.10.2.2:9001;
+    }
 }
 ```
 
-Explanation:
-- `listen`: The port that server will bind at
-- `proxy_ip`: The ip that central will redirect traffic to
-- `proxy_port`: The port that central will redirect traffic to
+Explaination:
+- `listen`: Port that central will bind on
+- `proxy_pass`: Destination that central will redirect traffic to
 
-With that example config and let's assume central ip is `10.10.0.1`, the central will listen on `10.10.0.1:9011` and whenever a team connect to that port, traffic will be routing to `10.10.1.2:9001`. You will want to modify that to fit your use and run `iptables_config ./routing.json` to config iptables. The script will modify 2 chains is `FORWARD` and `PREROUTING`, which you can view its rules with following commands:
+Copy that config and save as file in `/etc/nginx/nginx.conf` (there is already `nginx.conf` so you can replace that with this config), then run the command below to check if config is correct:
 
-```bash
-sudo iptables -S FORWARD
-sudo iptables -t nat -S PREROUTING
+```
+nginx -t
 ```
 
-Example of FORWARD chain:
+If config is correct, we will get successful message:
 
-![](images/iptables-show-forward-rules.png)
+![](images/nginx-check-config.png)
 
-Example of PREROUTING chain:
+With correct config, we will need to restart nginx service to update with new configuration:
 
-![](images/iptables-show-postrouting-rules.png)
+```
+systemctl restart nginx
+```
 
 Central machine is now set. Let's setup on team machine!
 

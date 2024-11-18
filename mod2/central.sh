@@ -32,75 +32,10 @@ basic_setup() {
 	printf "\n\n\n$RED### Basic setup ###$NC\n"
 	apt-get update
 	apt-get remove -y unattended-upgrades
-	apt-get install -y build-essential jq openvpn unzip python3-pip
+	echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
+	echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
+	apt-get install -y build-essential iptables-persistent nginx jq openvpn unzip python3-pip
 	ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa <<<y >/dev/null 2>&1
-
-	# Adding custom script for configuring routing
-echo '''#!/bin/bash
-
-if [ "$EUID" -ne 0 ]
-	then echo "Please run as sudo"
-	exit
-fi
-
-if [ -z "$1" ] ; then
-	echo "Usage: set_iptables <routing.json>"
-	exit
-fi
-
-# Check if config existed
-if [ -f /opt/iptables.save ]; then
-	echo "Restoring original rules..."
-	iptables-restore < /opt/iptables.save
-else
-	echo "Saving original rules..."
-	iptables-save > /opt/iptables.save
-fi
-
-rule_count=$(( `jq ".rules | length" $1`-1 ))
-for i in $(seq 0 $rule_count)
-do
-	listen=`jq ".rules[$i].listen" $1`
-	proxy_ip=`jq -r ".rules[$i].proxy_ip" $1`
-	proxy_port=`jq ".rules[$i].proxy_port" $1`
-
-	iptables -C FORWARD -p tcp --dport $proxy_port -j ACCEPT 2>1 >/dev/null
-	if [[ `echo $?` == 1 ]]; then
-		iptables -I FORWARD -p tcp --dport $proxy_port -j ACCEPT
-		echo "iptables -I FORWARD -p tcp --dport $proxy_port -j ACCEPT"
-	fi
-
-	iptables -C FORWARD -p tcp --sport $proxy_port -j ACCEPT 2>1 >/dev/null
-	if [[ `echo $?` == 1 ]]; then
-		iptables -I FORWARD -p tcp --sport $proxy_port -j ACCEPT
-		echo "iptables -I FORWARD -p tcp --sport $proxy_port -j ACCEPT"
-	fi
-
-	iptables -t nat -C PREROUTING -p tcp --dport $listen -j DNAT --to-destination $proxy_ip:$proxy_port 2>1 >/dev/null
-	if [[ `echo $?` == 1 ]]
-	then
-		iptables -t nat -I PREROUTING -p tcp --dport $listen -j DNAT --to-destination $proxy_ip:$proxy_port
-		echo "iptables -t nat -I PREROUTING -p tcp --dport $listen -j DNAT --to-destination $proxy_ip:$proxy_port"
-	fi
-done''' > /usr/local/bin/iptables_config
-	chmod +x /usr/local/bin/iptables_config
-	
-	if [ ! -f "routing.json" ]; then
-echo '''{
-	"rules": [
-		{
-			"listen": 9011,
-			"proxy_ip": "10.10.1.2",
-			"proxy_port": 9001
-		},
-		{
-			"listen": 9021,
-			"proxy_ip": "10.10.2.2",
-			"proxy_port": 9001
-		}
-	]
-}' > routing.json
-	fi
 }
 
 docker_installation() {
@@ -139,14 +74,6 @@ forcad_installation() {
 
 network_configuration() {
 	printf "\n\n\n$RED### Network configuration ###$NC\n"
-	sysctl -w net.ipv4.ip_forward=1
-	# iptables -P FORWARD ACCEPT
-	iptables -P FORWARD DROP
-	iptables -I FORWARD -i ens34 -o ens33 -j ACCEPT
-	iptables -I FORWARD -i ens33 -o ens34 -j ACCEPT
-	iptables -I FORWARD -i ens38 -o ens33 -j ACCEPT
-	iptables -I FORWARD -i ens33 -o ens38 -j ACCEPT
-	iptables -t nat -I POSTROUTING -o ens33 -j MASQUERADE
 
 	rm -rf /etc/netplan/*
 	echo """network:
@@ -169,6 +96,17 @@ network_configuration() {
             addresses: [$ip_2/24]""" > "/etc/netplan/01-server-network.yaml"
 	chmod 600 "/etc/netplan/01-server-network.yaml"
 	netplan apply
+
+	sysctl -w net.ipv4.ip_forward=1
+	iptables -P FORWARD DROP
+	iptables -I FORWARD -i ens34 -o ens33 -j ACCEPT
+	iptables -I FORWARD -i ens33 -o ens34 -j ACCEPT
+	iptables -I FORWARD -i ens38 -o ens33 -j ACCEPT
+	iptables -I FORWARD -i ens33 -o ens38 -j ACCEPT
+	iptables -t nat -I POSTROUTING -o ens33 -j MASQUERADE
+
+	mkdir /etc/iptables
+	iptables-save > /etc/iptables/rules.v4
 }
 
 
