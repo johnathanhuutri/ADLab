@@ -128,7 +128,7 @@ With option **Host connection** connected we have configured previously, our hos
 
 ![](images/team1-ip-dhcp-ping.png)
 
-So let's `scp` the script `team.sh` into machine, then `ssh` into it and we can run that script to setup team machine. Below is an example of full command running `team.sh`:
+So let's `scp` the script `team.sh` into machine, then `ssh` into it and we can run that script to setup team machine. Assuming that server is running at ip `10.254.1.1` and in network `10.254.1.0/24` so we will choose client ip is `10.254.1.2`. Below is an example of full command running `team.sh`:
 
 ```bash
 ./team.sh -s https://download1479.mediafire.com/25o8m8prcfjgcB-GE4TSzFmlAv7zU2Gdki_fY9jydo1cBScSvPXrDPFIxGWwEoc52Nfaw0tLfEkBjQRWSuN-9udgZ_5D1891J1Y6H0ltgo7aS8j9c5tm-036JGJ-Qp3Y-Ci6YSAKLyBODXAx97zqR6l0l5qZm1W-65sbS33qfSMXxQ/vszd1tzthg1fi3s/services_1.zip --cip 10.254.1.2 --sip 10.254.1.1
