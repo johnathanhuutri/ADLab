@@ -33,7 +33,7 @@ basic_setup() {
 	apt-get update
 	apt-get remove -y unattended-upgrades
 	echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
-	echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
+	echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
 	apt-get install -y build-essential iptables-persistent nginx jq openvpn unzip python3-pip
 	ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa <<<y >/dev/null 2>&1
 }
@@ -105,7 +105,6 @@ network_configuration() {
 	iptables -I FORWARD -i ens33 -o ens38 -j ACCEPT
 	iptables -t nat -I POSTROUTING -o ens33 -j MASQUERADE
 
-	mkdir /etc/iptables
 	iptables-save > /etc/iptables/rules.v4
 }
 

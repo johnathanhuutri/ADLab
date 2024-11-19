@@ -11,9 +11,7 @@
 
 ## Setup
 
-<details>
-	<summary>VMware configuration</summary>
-<p>
+### VMware configuration
 
 ------ **Central machine**
 
@@ -52,12 +50,7 @@ and it should look like this:
 
 That's all we needed. Now let's setup necessary stuff!
 
-</p>
-</details>
-
-<details>
-	<summary>Installation</summary>
-<p>
+### Installation
 
 ------ **Central machine**
 
@@ -149,7 +142,7 @@ Now we want to make team machine public to the net, we will use openvpn to achie
 
 ![](images/proxy1-ovpn-path.png)
 
-To start openvpn on team 1, just type:
+To start openvpn on team 1 and with filename of config is `proxy1.conf`, we just need to type:
 
 ```bash
 systemctl start openvpn-client@proxy1
@@ -159,7 +152,4 @@ Now team 1 has joined network of openvpn, we just need to download `client.ovpn`
 
 ![](images/ssh-to-proxy1.png)
 
-Setup for team 2 is similar as team 1 does.
-
-</p>
-</details>
+Setup for team 2 is similar as team 1.
