@@ -63,7 +63,7 @@ done
 printf "\n\n\n${RED}### Configuring OpenVPN server...${NC}\n"
 cp /usr/share/doc/openvpn/examples/sample-config-files/server.conf /etc/openvpn/server/
 sed -i "s/server 10.8.0.0 255.255.255.0/server ${SERVER_POOL}\npush \"route ${SERVER_POOL}\"\nroute ${TEAM1_IP} 255.255.255.255\nroute ${TEAM2_IP} 255.255.255.255/g" /etc/openvpn/server/server.conf
-sed -i 's/tls-auth ta.key 0/tls-crypt ta.key/g' /etc/openvpn/server/server.conf
+sed -i 's/;tls-auth ta.key 0/tls-crypt ta.key/g' /etc/openvpn/server/server.conf
 sed -i 's/cipher AES-256-CBC/cipher AES-256-GCM\nauth SHA256/g' /etc/openvpn/server/server.conf
 sed -i 's/dh dh2048.pem/dh none/g' /etc/openvpn/server/server.conf
 sed -i 's/;client-config-dir ccd/client-config-dir ccd/g' /etc/openvpn/server/server.conf
