@@ -114,26 +114,6 @@ while getopts ":hf:c:s:-:" opt; do
 		s)
 			service_url=$OPTARG
 			;;
-		# -) # Handle long options
-		# 	case $OPTARG in
-		# 		ip1)
-		# 			ip_1="${!OPTIND}" # Next argument is the value
-		# 			OPTIND=$((OPTIND + 1))	 # Shift to next option
-		# 			;;
-		# 		ip2)
-		# 			ip_2="${!OPTIND}" # Next argument is the value
-		# 			OPTIND=$((OPTIND + 1))	# Shift to next option
-		# 			;;
-		# 		lo)
-		# 			ip_lo="${!OPTIND}" # Next argument is the value
-		# 			OPTIND=$((OPTIND + 1))	# Shift to next option
-		# 			;;
-		# 		*)
-		# 			echo "Invalid option --$OPTARG"
-		# 			usage
-		# 			;;
-		# 	esac
-		# 	;;
 		\?) # Invalid short option
 			echo "Invalid option: -$OPTARG"
 			usage
