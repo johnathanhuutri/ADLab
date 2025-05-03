@@ -9,10 +9,13 @@ ip_2=""
 ip_lo=""
 
 export EASYRSA_BATCH=1
+export DEBIAN_FRONTEND=noninteractive
+
+
 
 usage() {
 	cat <<EOF
-Usage: $0 [OPTION]... -f FORCAD-URL -c CHECKER-URL --lo SERVER-IP --ip1 IP1 --ip2 IP2
+Usage: $0 [OPTION]... -f <FORCAD-URL> -c <CHECKER-URL> --lo <SERVER-IP> --ip1 <IP1> --ip2 <IP2>
 
 Options:
   -f, --forcad-url              link to download ForcAD.zip
@@ -29,7 +32,7 @@ EOF
 }
 
 basic_setup() {
-	printf "\n\n\n$RED### Basic setup ###$NC\n"
+	printf "\n\n\n${RED}### Basic setup ###${NC}\n"
 	apt-get update
 	apt-get remove -y unattended-upgrades
 	echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
@@ -39,7 +42,7 @@ basic_setup() {
 }
 
 docker_installation() {
-	printf "\n\n\n$RED### Docker installation ###$NC\n"
+	printf "\n\n\n${RED}### Docker installation ###${NC}\n"
 	# Add Docker's official GPG key:
 	apt-get update --fix-missing
 	apt-get install -y ca-certificates curl
@@ -56,14 +59,13 @@ docker_installation() {
 	apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 }
 
-forcad_installation() {
-	printf "\n\n\n$RED### ForcAD installation ###$NC\n"
-	cd /tmp
+forcad_configuration() {
+	printf "\n\n\n${RED}### ForcAD configuration ###${NC}\n"
 
-	wget $forcad_url -O ForcAD.zip
-	unzip ForcAD.zip -d /
-	wget $checker_url -O checkers.zip
-	unzip -o checkers.zip -d /ForcAD
+	wget $forcad_url -O /tmp/ForcAD.zip
+	unzip /tmp/ForcAD.zip -d /
+	wget $checker_url -O /tmp/checkers.zip
+	unzip -o /tmp/checkers.zip -d /ForcAD    # Overwrite existed checkers
 
 	cd /ForcAD
 	find checkers -mindepth 1 -type d -exec chmod +x "{}/checker.py" \;
@@ -73,7 +75,7 @@ forcad_installation() {
 }
 
 network_configuration() {
-	printf "\n\n\n$RED### Network configuration ###$NC\n"
+	printf "\n\n\n${RED}### Network configuration ###${NC}\n"
 
 	rm -rf /etc/netplan/*
 	echo """network:
@@ -107,6 +109,7 @@ network_configuration() {
 
 	iptables-save > /etc/iptables/rules.v4
 }
+
 
 
 if [ "$EUID" -ne 0 ]

@@ -7,6 +7,7 @@ server_ip=""
 service_url=""
 
 export EASYRSA_BATCH=1
+export DEBIAN_FRONTEND=noninteractive
 
 usage() {
 	cat <<EOF
@@ -81,9 +82,8 @@ docker_installation() {
 
 service_configuration() {
 	printf "\n\n\n$RED### Service configuration ###$NC\n"
-	cd /tmp
-	wget $service_url -O services.zip
-	unzip services.zip -d /
+	wget $service_url -O /tmp/services.zip
+	unzip /tmp/services.zip -d /
 }
 
 
