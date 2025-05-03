@@ -15,13 +15,14 @@ RUN useradd -m ctf && \
 	echo /bin/bash | chsh ctf && \
 	mkdir /root/.ssh && \
 	echo $SSHKEY > /root/.ssh/authorized_keys
+################################################
+
 ADD getflag /getflag
 RUN touch /flag1 && \
 	chmod 644 /flag1
 RUN touch /flag2 && \
 	chmod 600 /flag2 && \
 	chmod +xs /getflag
-################################################
 
 RUN apt-get update 
 RUN docker-php-ext-install mysqli
