@@ -1,0 +1,157 @@
+#!/bin/bash
+
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+forcad_url=""
+checker_url=""
+service_url=""
+
+export EASYRSA_BATCH=1
+export DEBIAN_FRONTEND=noninteractive
+
+
+
+usage() {
+	cat <<EOF
+Usage: $0 [OPTION]... -f <FORCAD-URL> -c <CHECKER-URL> -s <SERVICE-URL>
+
+Options:
+  -f, --forcad-url              link to download ForcAD.zip
+  -c, --checker-url             link to download checkers.zip
+  -h, --help                    display help message and exit
+
+Example: $0 -f https://github.com/ -c https://github.com/
+
+EOF
+	exit
+}
+
+basic_setup() {
+	printf "\n\n\n${RED}### Basic setup ###${NC}\n"
+	apt-get update
+	apt-get remove -y unattended-upgrades
+	echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
+	echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
+	apt-get install -y build-essential iptables-persistent nginx jq openvpn unzip python3-pip
+	ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa <<<y >/dev/null 2>&1
+}
+
+docker_installation() {
+	printf "\n\n\n${RED}### Docker installation ###${NC}\n"
+	# Add Docker's official GPG key:
+	apt-get update --fix-missing
+	apt-get install -y ca-certificates curl
+	install -m 0755 -d /etc/apt/keyrings
+	curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+	chmod a+r /etc/apt/keyrings/docker.asc
+
+	# Add the repository to Apt sources:
+	echo \
+	  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+	  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+	  tee /etc/apt/sources.list.d/docker.list > /dev/null
+	apt-get update
+	apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+}
+
+forcad_configuration() {
+	printf "\n\n\n${RED}### ForcAD configuration ###${NC}\n"
+
+	wget $forcad_url -O /tmp/ForcAD.zip
+	unzip /tmp/ForcAD.zip -d /
+	wget $checker_url -O /tmp/checkers.zip
+	unzip -o /tmp/checkers.zip -d /ForcAD    # Overwrite existed checkers
+
+	cd /ForcAD
+	find checkers -mindepth 1 -type d -exec chmod +x "{}/checker.py" \;
+	cp /root/.ssh/id_rsa ./checkers
+	chmod 644 ./checkers/id_rsa
+	pip3 install -r cli/requirements.txt
+	cd -
+}
+
+service_configuration() {
+	printf "\n\n\n${RED}### Service configuration ###${NC}\n"
+
+	wget $service_url -O /tmp/services.zip
+	unzip /tmp/services.zip -d /
+}
+
+network_configuration() {
+	printf "\n\n\n${RED}### Network configuration ###${NC}\n"
+	echo """network:
+    version: 2
+    ethernets:
+        enp2s1:
+            optional: true
+            dhcp4: true
+        enp2s2:
+            optional: true
+            dhcp4: false
+            addresses: [192.168.0.1/24]\n" > "/etc/netplan/01-network-manager-all.yaml"
+	chmod 600 "/etc/netplan/01-network-manager-all.yaml"
+	netplan apply
+}
+
+
+
+if [ "$EUID" -ne 0 ]
+	then echo "Please run as sudo"
+	exit
+fi
+
+while getopts ":hf:c:s:-:" opt; do
+	case $opt in
+		h)
+			usage
+			;;
+		c)
+			checker_url=$OPTARG
+			;;
+		f)
+			forcad_url=$OPTARG
+			;;
+		s)
+			service_url=$OPTARG
+			;;
+		# -) # Handle long options
+		# 	case $OPTARG in
+		# 		ip1)
+		# 			ip_1="${!OPTIND}" # Next argument is the value
+		# 			OPTIND=$((OPTIND + 1))	 # Shift to next option
+		# 			;;
+		# 		ip2)
+		# 			ip_2="${!OPTIND}" # Next argument is the value
+		# 			OPTIND=$((OPTIND + 1))	# Shift to next option
+		# 			;;
+		# 		lo)
+		# 			ip_lo="${!OPTIND}" # Next argument is the value
+		# 			OPTIND=$((OPTIND + 1))	# Shift to next option
+		# 			;;
+		# 		*)
+		# 			echo "Invalid option --$OPTARG"
+		# 			usage
+		# 			;;
+		# 	esac
+		# 	;;
+		\?) # Invalid short option
+			echo "Invalid option: -$OPTARG"
+			usage
+			;;
+		:) # Missing argument
+			echo "Option -$OPTARG requires an argument."
+			usage
+			;;
+	esac
+done
+
+if [[ -z $checker_url || -z $forcad_url || -z $service_url ]]; then
+	echo "Error: Missing required arguments"
+	usage
+fi
+
+basic_setup
+docker_installation
+forcad_installation
+network_configuration
+service_configuration
