@@ -19,6 +19,6 @@ case $1 in
 		done
 	;;
 	* )
-		echo "Invalid command!"
+		echo "Usage: $0 [start|stop]"
 	;;
 esac
