@@ -16,7 +16,8 @@ First, we will need to install 2 network adapter, first one is set to **NAT** an
 The script **`init.sh`** will config the **`Network Adapter 2`**'s ip to **`192.168.0.1/24`** so that bot can use this ip to check services.
 
 - Building challenge
-In addition, **init.sh** will also generate ssh key and store it in `/root/.ssh/` so when writing docker, you can take the template in challenge folder and build with command below:
+
+Script **init.sh** will also generate ssh key and store it in `/root/.ssh/` so when writing docker, you can take the template in challenge folder and build with command below:
 
 ```bash
 docker compose build --build-arg SSHKEY="`cat /root/.ssh/id_rsa.pub`"
