@@ -23,7 +23,7 @@ Options:
   --lo                          ip of server for general use
   --ip1                         ip of server to communicate with team1
   --ip2                         ip of server to communicate with team2
-  -h, --help                    display help message and exit
+  -h                            display help message and exit
 
 Example: $0 -f https://github.com/ -c https://github.com/ --lo 10.254.0.254 --ip1 10.254.1.1 --ip2 10.254.2.1
 

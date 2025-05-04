@@ -19,7 +19,7 @@ Options:
   -f, --forcad-url              link to download ForcAD.zip
   -c, --checker-url             link to download checkers.zip
   -s, --service-url             link to download checkers.zip
-  -h, --help                    display help message and exit
+  -h                            display help message and exit
 
 Example: $0 -f https://github.com/ -c https://github.com/
 
