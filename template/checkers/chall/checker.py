@@ -25,10 +25,14 @@ class Checker(BaseChecker):
     def check(self):
         self.cquit(Status.OK)
 
-    def put(self, flag_id: str, flag: str, vuln: str):
+    def put(self, flag_id, flag, vuln):
+        # Print to stdout and it will be used as flag_id for get()
+        # print("hehe")
         self.cquit(Status.OK)
 
-    def get(self, flag_id: str, flag: str, vuln: str):
+    def get(self, flag_id, flag, vuln):
+        # If put() print data to stdout then
+        # assert(flag_id=='hehe')
         self.cquit(Status.OK)
 
 
