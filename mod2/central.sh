@@ -33,6 +33,7 @@ EOF
 
 basic_setup() {
 	printf "\n\n\n${RED}### Basic setup ###${NC}\n"
+
 	apt-get update
 	apt-get remove -y unattended-upgrades
 	echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
@@ -43,14 +44,15 @@ basic_setup() {
 
 docker_installation() {
 	printf "\n\n\n${RED}### Docker installation ###${NC}\n"
-	# Add Docker's official GPG key:
+
+	# Add Docker's official GPG key
 	apt-get update --fix-missing
 	apt-get install -y ca-certificates curl
 	install -m 0755 -d /etc/apt/keyrings
 	curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
 	chmod a+r /etc/apt/keyrings/docker.asc
 
-	# Add the repository to Apt sources:
+	# Add the repository to Apt sources
 	echo \
 	  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
 	  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
@@ -130,6 +132,18 @@ while getopts ":hf:c:-:" opt; do
 			;;
 		-) # Handle long options
 			case $OPTARG in
+				forcad-url)
+					forcad_url="${!OPTIND}" # Next argument is the value
+					OPTIND=$((OPTIND + 1))	 # Shift to next option
+					;;
+				checker-url)
+					checker_url="${!OPTIND}" # Next argument is the value
+					OPTIND=$((OPTIND + 1))	# Shift to next option
+					;;
+				service-url)
+					service_url="${!OPTIND}" # Next argument is the value
+					OPTIND=$((OPTIND + 1))	# Shift to next option
+					;;
 				ip1)
 					ip_1="${!OPTIND}" # Next argument is the value
 					OPTIND=$((OPTIND + 1))	 # Shift to next option
@@ -159,7 +173,7 @@ while getopts ":hf:c:-:" opt; do
 	esac
 done
 
-if [[ -z $checker_url || -z $forcad_url || -z $ip_1 || -z $ip_2 || -z $ip_lo ]]; then
+if [[ -z $forcad_url || -z $checker_url || -z $ip_1 || -z $ip_2 || -z $ip_lo ]]; then
 	echo "Error: Missing required arguments"
 	usage
 fi
@@ -168,4 +182,3 @@ basic_setup
 docker_installation
 forcad_installation
 network_configuration
-cd ~
