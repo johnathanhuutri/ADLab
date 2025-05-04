@@ -18,6 +18,7 @@ Usage: $0 [OPTION]... -f <FORCAD-URL> -c <CHECKER-URL> -s <SERVICE-URL>
 Options:
   -f, --forcad-url              link to download ForcAD.zip
   -c, --checker-url             link to download checkers.zip
+  -s, --service-url             link to download checkers.zip
   -h, --help                    display help message and exit
 
 Example: $0 -f https://github.com/ -c https://github.com/
@@ -28,6 +29,7 @@ EOF
 
 basic_setup() {
 	printf "\n\n\n${RED}### Basic setup ###${NC}\n"
+
 	apt-get update
 	apt-get remove -y unattended-upgrades
 	echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
@@ -38,14 +40,15 @@ basic_setup() {
 
 docker_installation() {
 	printf "\n\n\n${RED}### Docker installation ###${NC}\n"
-	# Add Docker's official GPG key:
+
+	# Add Docker's official GPG key
 	apt-get update --fix-missing
 	apt-get install -y ca-certificates curl
 	install -m 0755 -d /etc/apt/keyrings
 	curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
 	chmod a+r /etc/apt/keyrings/docker.asc
 
-	# Add the repository to Apt sources:
+	# Add the repository to Apt sources
 	echo \
 	  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
 	  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
@@ -79,16 +82,14 @@ service_configuration() {
 
 network_configuration() {
 	printf "\n\n\n${RED}### Network configuration ###${NC}\n"
+
+	rm -rf /etc/netplan/*
 	echo """network:
     version: 2
     ethernets:
         enp2s1:
             optional: true
-            dhcp4: true
-        enp2s2:
-            optional: true
-            dhcp4: false
-            addresses: [192.168.0.1/24]\n" > "/etc/netplan/01-network-manager-all.yaml"
+            dhcp4: true""" > "/etc/netplan/01-network-manager-all.yaml"
 	chmod 600 "/etc/netplan/01-network-manager-all.yaml"
 	netplan apply
 }
@@ -105,14 +106,34 @@ while getopts ":hf:c:s:-:" opt; do
 		h)
 			usage
 			;;
-		c)
-			checker_url=$OPTARG
-			;;
 		f)
 			forcad_url=$OPTARG
 			;;
+		c)
+			checker_url=$OPTARG
+			;;
 		s)
 			service_url=$OPTARG
+			;;
+		-) # Handle long options
+			case $OPTARG in
+				forcad-url)
+					forcad_url="${!OPTIND}" # Next argument is the value
+					OPTIND=$((OPTIND + 1))	 # Shift to next option
+					;;
+				checker-url)
+					checker_url="${!OPTIND}" # Next argument is the value
+					OPTIND=$((OPTIND + 1))	# Shift to next option
+					;;
+				service-url)
+					service_url="${!OPTIND}" # Next argument is the value
+					OPTIND=$((OPTIND + 1))	# Shift to next option
+					;;
+				*)
+					echo "Invalid option --$OPTARG"
+					usage
+					;;
+			esac
 			;;
 		\?) # Invalid short option
 			echo "Invalid option: -$OPTARG"
@@ -125,7 +146,7 @@ while getopts ":hf:c:s:-:" opt; do
 	esac
 done
 
-if [[ -z $checker_url || -z $forcad_url || -z $service_url ]]; then
+if [[ -z $forcad_url || -z $checker_url || -z $service_url ]]; then
 	echo "Error: Missing required arguments"
 	usage
 fi
