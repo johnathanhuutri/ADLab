@@ -150,24 +150,6 @@ def get(self, flag_id: str, flag: str, vuln: str):
 
 When running `init.sh` script, the script has already generatee a ssh key and copied to `/ForcAD/checkers` so in case you want to put and get flag via ssh of root, you can write script using key at `/checkers/id_rsa`
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Flag submission ([Menu](#menu))
 
 API for submitting flag:
@@ -187,7 +169,7 @@ Explain:
 
 ### Issue 1: Change admin password ([Menu](#menu))
 
-- ***Situation 1: Forgot password***
+- ***Situation 1: Forgotten password***
 
 If you want to change admin password (username is `forcad`, password is forgotten), let's jump into docker of PostGres:
 
@@ -235,7 +217,7 @@ This is the wrong shell:
 
 If you are in the wrong shell, just press `Ctrl + C` to get back the right shell!
 
-- ***Situation 2: Know password***
+- ***Situation 2: Known password***
 
 You can install psql in your host and then run:
 
