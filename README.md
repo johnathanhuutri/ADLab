@@ -7,11 +7,6 @@ This repo contains 3 labs and with each lab, you will need to config differently
 
 ## Menu
 
-- [Creating Subnets](#creating-subnets-menu)
-- [Central Machine](#central-machine-menu)
-- [Team Machine](#team-machine-menu)
-- [For Player](#for-player-menu)
-- [For Author](#for-author-menu)
 - [ForcAD Issues](#forcad-issues-menu)
     - [Issue 1: Change admin password](#issue-1-change-admin-password)
     - [Issue 2: Debug docker](#issue-2-debug-docker)
@@ -191,7 +186,7 @@ Because those 3 function can be run at the same time so if challenge cannot gene
 
 ## ForcAD Issues ([Menu](#menu))
 
-### Issue 1: Change admin password
+### Issue 1: Change admin password ([Menu](#menu))
 
 - ***Case 1***: In case you don't know password
 
@@ -251,7 +246,7 @@ psql -h 0.0.0.0 -U forcad
 
 It will ask for your password, then you enter password and you can get into PostGreSQL shell! With that shell, you can do as instructed in ***Case 1*** to change password.
 
-### Issue 2: Debug docker
+### Issue 2: Debug docker ([Menu](#menu))
 
 While a docker is booting, it will echo data out. We can get all data just by using `docker logs` to see if the init script works as desired. Let's check with PostGreSQL container:
 
@@ -265,7 +260,9 @@ The logs can show you if there are any steps broken:
 
 ![image](images/issue2_initializer_logs.png)
 
-### Issue 3: Mouting in Docker-in-Docker ([reference](https://stackoverflow.com/a/62413225/17872100))
+### Issue 3: Mouting in Docker-in-Docker ([Menu](#menu))
+
+> Ref: https://stackoverflow.com/a/62413225/17872100
 
 Because we are running a docker, now if we run ForcAD, that means run another docker inside a docker but ForcAD also need to mount a file, that's a big problem. Let's say we have here:
 
@@ -290,7 +287,9 @@ sudo docker run -v /D2:/D2 -it D2
 After we access D2, we check D2 has `/D2` and host has `/D2` but not D1. You can read reference (on title) for more details.
 
 
-### Issue 4: No space left on device ([reference](https://stackoverflow.com/a/75036976/17872100))
+### Issue 4: No space left on device ([Menu](#menu))
+
+> Ref: https://stackoverflow.com/a/75036976/17872100
 
 When you run ForcAD but it doesn't work as normal, you can try to read the logs from initializer:
 
@@ -308,7 +307,9 @@ docker system prune --volumes --all
 
 ![image](images/issue4_docker_system_prune.png)
 
-### Issue 5: Install apt package for checker ([reference](https://github.com/pomo-mondreganto/ForcAD/wiki/Writing-a-checker#modifying-checker-container))
+### Issue 5: Install apt package for checker ([Menu](#menu))
+
+> Ref: https://github.com/pomo-mondreganto/ForcAD/wiki/Writing-a-checker#modifying-checker-container
 
 Install python package is easy because you can add package to file:
 
@@ -359,12 +360,14 @@ When we take that command and run in celery shell, its output is the same:
 
 ![image](images/issue5_console_error.png)
 
-### Issue 6: Cannot ssh to team
+### Issue 6: Cannot ssh to team ([Menu](#menu))
 
 It can be that both your host and docker team is running ssh server so when a person ssh, it will connect to host, not docker.
 
 Solution is to shutdown ssh server on your host. Ssh again will jump directly to docker!
 
-### Issue 7: Use output of `put` as flag_id of `get` ([reference](https://github.com/pomo-mondreganto/ForcAD/wiki/Writing-a-checker))
+### Issue 7: Use output of `put` as flag_id of `get` ([Menu](#menu))
+
+> Ref: https://github.com/pomo-mondreganto/ForcAD/wiki/Writing-a-checker
 
 Just simply print data to stdout in `put` function and that data will be flag_id for `get` function
