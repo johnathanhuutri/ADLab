@@ -136,7 +136,7 @@ So let's `scp` the script `team.sh` into machine, then `ssh` into it and we can 
 
 If a challenge need to put flag via SSH, you can copy public key from central in `/root/.ssh/id_rsa.pub` into team machine.
 
-Now we want to make team machine public to the net, we will use openvpn to achieve that. With team 1, transfer `/root/proxy1/files/proxy1.ovpn` from vps (which hosts openvpn-server) to team machine at `/etc/openvpn/client` and rename it from `proxy1.ovpn` into `proxy1.conf`:
+Now we want to make team machine can be accessed from the internet, we will use openvpn to achieve that. With team 1, transfer `/root/proxy1/files/proxy1.ovpn` from vps (which hosts openvpn-server) to team machine at `/etc/openvpn/client` and rename it from `proxy1.ovpn` into `proxy1.conf`:
 
 ![](images/vps-proxy1-ovpn-path.png)
 
