@@ -8,6 +8,8 @@ This repo contains 3 labs and with each lab, you will need to config differently
 ## Menu
 
 - [Challenge Writing](#challenge-writing-menu)
+- [Checker Writing](#checker-writing-menu)
+- [Flag submission](#flag-submission-menu)
 - [ForcAD Issues](#forcad-issues-menu)
     - [Issue 1: Change admin password](#issue-1-change-admin-password-menu)
     - [Issue 2: Debug docker](#issue-2-debug-docker-menu)
