@@ -4,16 +4,16 @@
 
 > 2 machines for teams containing services
 
-## Application
+# Application
 - [ForcAD](https://github.com/pomo-mondreganto/ForcAD/releases/tag/v1.4.0)
 - [Docker](https://docs.docker.com/engine/install/ubuntu/)
 - Openvpn
 
-## Setup
+# Setup
 
-### VMware configuration
+## VMware configuration
 
------- **Central machine**
+### ------ **Central machine**
 
 First, we will need to install 3 network adapter on **central** machine (remember to match VMnet with the correct adapter name):
 - `Network Adapter` is set to **NAT**
@@ -22,7 +22,7 @@ First, we will need to install 3 network adapter on **central** machine (remembe
 
 ![](images/central-vmware-adapter.png)
 
------- **Team machine**
+### ------ **Team machine**
 
 Now we will config `Network Adapter` of team 1 into **VMnet1**:
 
@@ -50,9 +50,9 @@ and it should look like this:
 
 That's all we needed. Now let's setup necessary stuff!
 
-### Installation
+## Installation
 
------- **Central machine**
+### ------ **Central machine**
 
 On central, we already have access to Internet because of NAT adapter so let's install on central first. We will transfer `central.sh` into machine using `scp` and then run that script with these required parameters:
 
@@ -120,7 +120,7 @@ systemctl restart nginx
 
 Central machine is now set. Let's setup on team machine!
 
------- **Team machine**
+### ------ **Team machine**
 
 With option **Host connection** connected we have configured previously, our host machine can ping to vmware machine of team 1 and team 2 with ip assigned by DHCP:
 
