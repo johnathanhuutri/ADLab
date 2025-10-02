@@ -7,6 +7,7 @@ This repo contains 3 labs and with each lab, you will need to config differently
 
 ## Menu
 
+- [Challenge Writing](#challenge-writing-menu)
 - [ForcAD Issues](#forcad-issues-menu)
     - [Issue 1: Change admin password](#issue-1-change-admin-password-menu)
     - [Issue 2: Debug docker](#issue-2-debug-docker-menu)
@@ -16,7 +17,7 @@ This repo contains 3 labs and with each lab, you will need to config differently
     - [Issue 6: Cannot ssh to team](#issue-6-cannot-ssh-to-team-menu)
     - [Issue 7: Use output of `put` as flag_id of `get`](#issue-7-use-output-of-put-as-flag_id-of-get-menu)
 
-## Challenge Writing
+## Challenge Writing ([Menu](#menu))
 
 ```
 FROM ubuntu:22.04
@@ -72,7 +73,17 @@ After it built successful, we can run docker image now:
 docker compose up --detach
 ```
 
-## Checker Writing
+## Checker Writing ([Menu](#menu))
+
+I have a template for checker [here](template/checkers).
+
+Basically, we just need `checker.py`. But because I want to have some function to interact with server so I added `backend.py` and then I can write code in `backend.py`, which make `checker.py` cleaner.
+
+- ***Situation 1: race condition between `check()`, `put()` and `get`***
+
+Because those 3 function can be run at the same time so if challenge cannot generate random data with each connection, it can cause race condition. The best way is to use `filelock` and `time` of python framework to prevent that!
+
+- ***Situation 2: put and get flag via SSH***
 
 In case you want to put and get flag via SSH, use `paramiko` in python to support that:
 
@@ -157,7 +168,7 @@ When running `init.sh` script, the script has already generatee a ssh key and co
 
 
 
-## Flag submission
+## Flag submission ([Menu](#menu))
 
 API for submitting flag:
 
@@ -172,23 +183,11 @@ Explain:
 - `$TOKEN` can be retrieved by executing `control.py print_tokens` on central machine
 - `abcd`, `1234` are flags
 
-## Writing checkers
-
-I have a template for checker [here](template/checkers).
-
-Basically, we just need `checker.py`. But because I want to have some function to interact with remote so I added `backend.py` and then I can write code in `backend.py`, which make `checker.py` clean.
-
-In `checker.py`, you just need to add code to `check()`, `put()` and `get()` and that's done. In `backend.py`, you can add more functions into class `CheckMachine` because the backend will handle all action related to remote like send and receive data.
-
-- Race condition between `check()`, `put()` and `get`
-
-Because those 3 function can be run at the same time so if challenge cannot generate random data with each connection, it can cause race condition. The best way is to use `filelock` and `time` of python framework to prevent that!
-
 ## ForcAD Issues ([Menu](#menu))
 
 ### Issue 1: Change admin password ([Menu](#menu))
 
-- ***Case 1***: In case you don't know password
+- ***Situation 1: Forgot password***
 
 If you want to change admin password (username is `forcad`, password is forgotten), let's jump into docker of PostGres:
 
@@ -236,7 +235,7 @@ This is the wrong shell:
 
 If you are in the wrong shell, just press `Ctrl + C` to get back the right shell!
 
-- ***Case 2***: In case you know password
+- ***Situation 2: Know password***
 
 You can install psql in your host and then run:
 
@@ -362,9 +361,9 @@ When we take that command and run in celery shell, its output is the same:
 
 ### Issue 6: Cannot ssh to team ([Menu](#menu))
 
-It can be that both your host and docker team is running ssh server so when a person ssh, it will connect to host, not docker.
+It can be that both your host and docker team is running SSH server so when a person SSH, it will connect to host, not docker.
 
-Solution is to shutdown ssh server on your host. Ssh again will jump directly to docker!
+Solution is to shutdown ssh server on your host. SSH again will jump directly to docker!
 
 ### Issue 7: Use output of `put` as flag_id of `get` ([Menu](#menu))
 
