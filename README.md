@@ -8,13 +8,13 @@ This repo contains 3 labs and with each lab, you will need to config differently
 ## Menu
 
 - [ForcAD Issues](#forcad-issues-menu)
-    - [Issue 1: Change admin password](#issue-1-change-admin-password)
-    - [Issue 2: Debug docker](#issue-2-debug-docker)
-    - [Issue 3: Mouting in Docker-in-Docker](#issue-3-mouting-in-docker-in-docker-reference)
-    - [Issue 4: No space left on device](#issue-4-no-space-left-on-device-reference)
-    - [Issue 5: Install apt package for checker](#issue-5-install-apt-package-for-checker-reference)
-    - [Issue 6: Cannot ssh to team](#issue-6-cannot-ssh-to-team)
-    - [Issue 7: Use output of `put` as flag_id of `get`](#issue-7-use-output-of-put-as-flag_id-of-get-reference)
+    - [Issue 1: Change admin password](#issue-1-change-admin-password-menu)
+    - [Issue 2: Debug docker](#issue-2-debug-docker-menu)
+    - [Issue 3: Mouting in Docker-in-Docker](#issue-3-mouting-in-docker-in-docker-menu)
+    - [Issue 4: No space left on device](#issue-4-no-space-left-on-device-menu)
+    - [Issue 5: Install apt package for checker](#issue-5-install-apt-package-for-checker-menu)
+    - [Issue 6: Cannot ssh to team](#issue-6-cannot-ssh-to-team-menu)
+    - [Issue 7: Use output of `put` as flag_id of `get`](#issue-7-use-output-of-put-as-flag_id-of-get-menu)
 
 ## Challenge Writing
 
