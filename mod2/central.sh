@@ -2,177 +2,228 @@
 
 RED='\033[0;31m'
 NC='\033[0m' # No Color
-forcad_url=""
-checker_url=""
-ip_1=""
-ip_2=""
-ip_lo=""
+forcad=""
+checker=""
+out=""
+team1=""
+team2=""
 
 export EASYRSA_BATCH=1
 export DEBIAN_FRONTEND=noninteractive
 
 usage() {
-	cat <<EOF
-Usage: $0 [OPTION]... --lo <SERVER-IP> --ip1 <IP1> --ip2 <IP2> [-f FORCAD_URL] [-c CHECKER_URL]
+    cat <<EOF
+Usage: $0 [OPTION]... --out INTERFACE_OUT --team1 INTERFACE_TEAM1 --team2 INTERFACE_TEAM2 [-f FORCAD_URL] [-c CHECKER_URL]
 
 Options:
-  -f, --forcad-url              link to download ForcAD.zip (or ensure ForcAD.zip exists locally)
-  -c, --checker-url             link to download checkers.zip (or ensure checkers.zip exists locally)
-  --lo                          ip of server for general use
-  --ip1                         ip of server to communicate with team1
-  --ip2                         ip of server to communicate with team2
-  -h                            display help message and exit
+  -f, --forcad                  link to download ForcAD.zip (omit to use local ForcAD.zip)
+  -c, --checker                 link to download checkers.zip (omit to use local checkers.zip)
+  --out                         interface name for accessing the internet
+  --team1                       interface name for communicating with team1
+  --team2                       interface name for communicating with team2
+  -h, --help                    display help message and exit
 
-Example: $0 -f https://github.com/ -c https://github.com/ --lo 10.254.0.254 --ip1 10.254.1.1 --ip2 10.254.2.1
+Example: $0 --out ens33 --team1 ens37 --team2 ens38 -f https://github.com/ -c https://github.com/
 
 EOF
-	exit
+    exit
+}
+
+check_and_fetch() {
+    local url=$1      # url tương ứng
+    local file=$2     # file local cần kiểm tra
+
+    if [ -n "$url" ]; then
+        echo "[*] Downloading $file from $url"
+        wget -q "$url" -O "$file" || { echo "[-] Failed to download $file"; exit 1; }
+    else
+        if [ ! -f "$file" ]; then
+            echo "[-] Missing $file: neither URL provided nor local file found ($file)"
+            exit 1
+        fi
+        echo "[*] Using local file: $file"
+    fi
 }
 
 basic_setup() {
-	printf "\n\n\n${RED}### Basic setup ###${NC}\n"
+    printf "\n\n\n${RED}### Basic setup ###${NC}\n"
 
-	apt-get update
-	apt-get remove -y unattended-upgrades
-	echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
-	echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
-	apt-get install -y build-essential iptables-persistent nginx jq openvpn unzip python3-pip
-	ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa <<<y >/dev/null 2>&1
+    apt-get update
+    apt-get remove -y unattended-upgrades
+    echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
+    echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
+    apt-get install -y build-essential iptables-persistent nginx jq openvpn unzip python3-pip
+    ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa <<<y >/dev/null 2>&1
+
+    check_and_fetch "$forcad" "ForcAD.zip"
+    check_and_fetch "$checker" "checkers.zip"
+
+    unzip -o ForcAD.zip -d /
+    unzip -o checkers.zip -d /ForcAD
 }
 
 docker_installation() {
-	printf "\n\n\n${RED}### Docker installation ###${NC}\n"
+    printf "\n\n\n${RED}### Docker installation ###${NC}\n"
 
-	# Add Docker's official GPG key
-	apt-get update --fix-missing
-	apt-get install -y ca-certificates curl
-	install -m 0755 -d /etc/apt/keyrings
-	curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-	chmod a+r /etc/apt/keyrings/docker.asc
+    if command -v docker >/dev/null 2>&1; then
+        echo "[*] Docker is already installed, skipping installation."
+        return
+    fi
 
-	# Add the repository to Apt sources
-	echo \
-	  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-	  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-	  tee /etc/apt/sources.list.d/docker.list > /dev/null
-	apt-get update
-	apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    # Add Docker's official GPG key
+    apt-get update --fix-missing
+    apt-get install -y ca-certificates curl
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    chmod a+r /etc/apt/keyrings/docker.asc
+
+    # Add the repository to Apt sources
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      tee /etc/apt/sources.list.d/docker.list > /dev/null
+    apt-get update
+    apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+    usermod -aG docker $SUDO_USER
+
+    echo "[+] Docker installed successfully."
 }
 
 forcad_setup() {
-	printf "\n\n\n${RED}### ForcAD configuration ###${NC}\n"
+    printf "\n\n\n${RED}### ForcAD configuration ###${NC}\n"
 
-	wget $forcad_url -O /tmp/ForcAD.zip
-	unzip /tmp/ForcAD.zip -d /
-	wget $checker_url -O /tmp/checkers.zip
-	unzip -o /tmp/checkers.zip -d /ForcAD    # Overwrite existed checkers
-
-	cd /ForcAD
-	find checkers -name checker.py -type f -exec chmod +x {} \;
-	cp /root/.ssh/id_rsa ./checkers
-	chmod 644 ./checkers/id_rsa
-	pip3 install -r cli/requirements.txt
+    cd /ForcAD
+    find checkers -name checker.py -type f -exec chmod +x {} \;
+    cp /root/.ssh/id_rsa ./checkers
+    chmod 644 ./checkers/id_rsa
+    pip3 install -r cli/requirements.txt
+    cd -
 }
 
 network_configuration() {
-	printf "\n\n\n${RED}### Network configuration ###${NC}\n"
+    printf "\n\n\n${RED}### Network configuration ###${NC}\n"
 
-	rm -rf /etc/netplan/*
-	echo """network:
+    mac_out=$(cat /sys/class/net/$out/address)
+    mac_team1=$(cat /sys/class/net/$team1/address)
+    mac_team2=$(cat /sys/class/net/$team2/address)
+
+    rm -rf /etc/netplan/*
+    echo """network:
     version: 2
     ethernets:
-        ens33:
+        lo:
+            addresses:
+                - 127.0.0.1/8
+                - 10.254.0.254/32
+        out:
             optional: true
             dhcp4: true
             nameservers:
                 addresses: [8.8.8.8, 8.8.4.4]
-        ens34:
+            match:
+                macaddress: $mac_out
+            set-name: out
+        team1:
             optional: true
             dhcp4: false
-            addresses: [$ip_1/24]
-        ens38:
+            addresses: [10.254.1.1/24]
+            match:
+                macaddress: $mac_team1
+            set-name: team1
+        team2:
             optional: true
             dhcp4: false
-            addresses: [$ip_2/24]""" > "/etc/netplan/01-server-network.yaml"
-	chmod 600 "/etc/netplan/01-server-network.yaml"
-	netplan apply
+            addresses: [10.254.2.1/24]
+            match:
+                macaddress: $mac_team2
+            set-name: team2""" > "/etc/netplan/01-network.yaml"
+    chmod 600 "/etc/netplan/01-network.yaml"
+    netplan apply
 
-	sysctl -w net.ipv4.ip_forward=1
-	iptables -P FORWARD DROP
-	iptables -I FORWARD -i ens34 -o ens33 -j ACCEPT
-	iptables -I FORWARD -i ens33 -o ens34 -j ACCEPT
-	iptables -I FORWARD -i ens38 -o ens33 -j ACCEPT
-	iptables -I FORWARD -i ens33 -o ens38 -j ACCEPT
-	iptables -t nat -I POSTROUTING -o ens33 -j MASQUERADE
+    iptables -P FORWARD DROP
+    iptables -I FORWARD -i team1 -o out -j ACCEPT
+    iptables -I FORWARD -i out -o team1 -j ACCEPT
+    iptables -I FORWARD -i team2 -o out -j ACCEPT
+    iptables -I FORWARD -i out -o team2 -j ACCEPT
+    iptables -t nat -I POSTROUTING -o out -j MASQUERADE
 
-	iptables-save > /etc/iptables/rules.v4
+    iptables-save > /etc/iptables/rules.v4
+
+    echo 'net.ipv4.ip_forward = 1' > /etc/sysctl.d/99-ipforward.conf
+    sudo sysctl --system
 }
 
 
 
 if [ "$EUID" -ne 0 ]
-	then echo "Please run as sudo"
-	exit
+    then echo "Please run as sudo"
+    exit
 fi
 
 while getopts ":hf:c:-:" opt; do
-	case $opt in
-		h)
-			usage
-			;;
-		c)
-			checker_url=$OPTARG
-			;;
-		f)
-			forcad_url=$OPTARG
-			;;
-		-) # Handle long options
-			case $OPTARG in
-				forcad-url)
-					forcad_url="${!OPTIND}" # Next argument is the value
-					OPTIND=$((OPTIND + 1))	 # Shift to next option
-					;;
-				checker-url)
-					checker_url="${!OPTIND}" # Next argument is the value
-					OPTIND=$((OPTIND + 1))	# Shift to next option
-					;;
-				service-url)
-					service_url="${!OPTIND}" # Next argument is the value
-					OPTIND=$((OPTIND + 1))	# Shift to next option
-					;;
-				ip1)
-					ip_1="${!OPTIND}" # Next argument is the value
-					OPTIND=$((OPTIND + 1))	 # Shift to next option
-					;;
-				ip2)
-					ip_2="${!OPTIND}" # Next argument is the value
-					OPTIND=$((OPTIND + 1))	# Shift to next option
-					;;
-				lo)
-					ip_lo="${!OPTIND}" # Next argument is the value
-					OPTIND=$((OPTIND + 1))	# Shift to next option
-					;;
-				*)
-					echo "Invalid option --$OPTARG"
-					usage
-					;;
-			esac
-			;;
-		\?) # Invalid short option
-			echo "Invalid option: -$OPTARG"
-			usage
-			;;
-		:) # Missing argument
-			echo "Option -$OPTARG requires an argument."
-			usage
-			;;
-	esac
+    case $opt in
+        h)
+            usage
+            ;;
+        c)
+            checker=$OPTARG
+            ;;
+        f)
+            forcad=$OPTARG
+            ;;
+        -) # Handle long options
+            case $OPTARG in
+                forcad)
+                    forcad="${!OPTIND}" # Next argument is the value
+                    OPTIND=$((OPTIND + 1))     # Shift to next option
+                    ;;
+                checker)
+                    checker="${!OPTIND}" # Next argument is the value
+                    OPTIND=$((OPTIND + 1))    # Shift to next option
+                    ;;
+                out)
+                    out="${!OPTIND}" # Next argument is the value
+                    OPTIND=$((OPTIND + 1))     # Shift to next option
+                    ;;
+                team1)
+                    team1="${!OPTIND}" # Next argument is the value
+                    OPTIND=$((OPTIND + 1))    # Shift to next option
+                    ;;
+                team2)
+                    team2="${!OPTIND}" # Next argument is the value
+                    OPTIND=$((OPTIND + 1))    # Shift to next option
+                    ;;
+                help)
+                    usage
+                    ;;
+                *)
+                    echo "Invalid option --$OPTARG"
+                    usage
+                    ;;
+            esac
+            ;;
+        \?) # Invalid short option
+            echo "Invalid option: -$OPTARG"
+            usage
+            ;;
+        :) # Missing argument
+            echo "Option -$OPTARG requires an argument."
+            usage
+            ;;
+    esac
 done
 
-required_vars=(forcad_url checker_url ip_1 ip_2 ip_lo)
+required_vars=(out team1 team2)
 for var in "${required_vars[@]}"; do
     if [ -z "${!var}" ]; then
         echo "Error: Missing required argument: $var"
+        usage
+    fi
+
+    # Kiểm tra interface có tồn tại và có file address
+    if [ ! -f "/sys/class/net/${!var}/address" ]; then
+        echo "Error: Invalid interface: '${!var}'"
         usage
     fi
 done

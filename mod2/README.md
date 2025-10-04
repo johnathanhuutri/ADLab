@@ -53,32 +53,36 @@ Then we will config `Network Adapter` of team 2 into **VMnet2**:
 
 That's all we needed. Now let's setup necessary stuff!
 
-## Installation
+## Configuration
 
 ### ------ **Central machine**
 
-On central, we already have access to Internet because of NAT adapter so let's install on central first. We will transfer `central.sh` into machine using `scp` and then run that script with these required parameters:
+On central, we already have access to Internet because of NAT adapter so let's config on central first. We will transfer `central.sh` into machine using `scp` and then run that script with these required parameters:
 
 ```bash
-./central.sh [OPTION]... -f FORCAD-URL -c CHECKER-URL --lo SERVER-IP --ip1 IP1 --ip2 IP2
+./central.sh [OPTION]... --out INTERFACE_OUT --team1 INTERFACE_TEAM1 --team2 INTERFACE_TEAM2 -f FORCAD_URL -c CHECKER_URL
 ```
 
 Explanation:
-- `FORCAD-URL`: link to download ForcAD.zip
-- `CHECKER-URL`: link to download checkers.zip
-- `SERVER-IP`: general ip that all team will use to attack (or view scoreboard)
-- `IP1`: ip of server to communicate with team1
-- `IP2`: ip of server to communicate with team2
+- `INTERFACE_OUT`: general ip that all team will use to attack (or view scoreboard)
+- `INTERFACE_TEAM1`: ip of server to communicate with team1
+- `INTERFACE_TEAM2`: ip of server to communicate with team2
+- `FORCAD_URL`: link to download ForcAD.zip
+- `CHECKER_URL`: link to download checkers.zip
 
-For example, I will assume team 1's network is `10.254.1.0/24` and team 2's network is `10.254.2.0/24` so I can set `--ip1` to `10.254.1.1`, `--ip2` `10.254.2.1` and server ip to `10.254.0.254`. For `ForcAD.zip` and `checkers.zip`, you can get it from release section. Below is an example of full command running `central.sh` (you will need to generate new link for those files):
+In my example, let's check all interface name:
+
+![](.images/central-check-interface-name.png)
+
+So we can see ens33 is NAT, ens37 is VMnet2 and ens38 is VMnet3 (they are in the same order as Network Adapter Card). For `ForcAD.zip` and `checkers.zip`, you can get it from release section. Below is an example of full command running `central.sh`:
 
 ```bash
-./central.sh -f https://download1528.mediafire.com/h4az9jqmejfg6olNoEZ_EnD9qNJBY_IqkKadXd23l8ZFyjHepzJiwqGUZ2V6fbuDJC2wMD68Jw25DKiFfN7acEY-AV5zLDjdGhFEFISJQFkN0rVFd8HBjd76EPu0O8CebQxzFQV8fMU72d6OanVW1reTdX1qgUncI_QuhgQ0ug/dxj0c3wt67tjcr8/ForcAD.zip -c https://download1479.mediafire.com/zankd1kz41wgQ8zcV-MnWa4WGUco7hWMYPUC5052p5EgQZKjBRATq0w0XFx1Aki6LnraSsHNlXQOrguGJm2hUe3Aq3xumBuuRuzO-ckNEroR-Y9OHwhSfhWlyo2qsd3hE45hdYR3Nh9vRST9uAh0jmCHEanSHLhjLOlaUmHuJA/39u04c47qcr4h0j/checkers_1.zip --if1 ens34 --ip1 10.254.1.1 --if2 ens38 --ip2 10.254.2.1
+./central.sh --out ens33 --team1 ens37 --team2 ens38 -f https://github.com/ -c https://github.com/
 ```
 
 > This script will also generate a new SSH key pair and put private key in `/ForcAD/checkers` just in case you need it.
 
-Now we will want central machine to route traffic from team 1 to team 2 and vice versa. The tool we will use is `nginx`. Below is an example for `/etc/nginx/nginx.conf` that you will want to modify:
+Now we will want to **route traffic** from team 1 to team 2 and vice versa. We will use is `nginx` and below is an example for `/etc/nginx/nginx.conf` that you will want to modify:
 
 ```
 worker_processes auto;
@@ -92,11 +96,11 @@ events {
 stream {
     server {
         listen 40101;
-        proxy_pass 10.10.1.2:9001;
+        proxy_pass 10.254.1.2:9001;
     }
     server {
         listen 40201;
-        proxy_pass 10.10.2.2:9001;
+        proxy_pass 10.254.2.2:9001;
     }
 }
 ```
@@ -105,17 +109,17 @@ Explaination:
 - `listen`: Port that central will bind on
 - `proxy_pass`: Destination that central will redirect traffic to
 
-Copy that config and save as file in `/etc/nginx/nginx.conf` (there is already `nginx.conf` so you can replace that with this config), then run the command below to check if config is correct:
+Modify `/etc/nginx/nginx.conf` with your config, then run the command below to check if config is correct:
 
 ```
 nginx -t
 ```
 
-If config is correct, we will get successful message:
+If config can work, we will get successful message:
 
 ![](.images/nginx-check-config.png)
 
-With correct config, we will need to restart nginx service to update with new configuration:
+Now we just need to restart nginx service to update with new configuration:
 
 ```
 systemctl restart nginx
@@ -125,21 +129,20 @@ Central machine is now set. Let's setup on team machine!
 
 ### ------ **Team machine**
 
-With option **Host connection** connected we have configured previously, our host machine can ping to vmware machine of team 1 and team 2 with ip assigned by DHCP:
-
-![](.images/team1-ip-dhcp.png)
-
-![](.images/team1-ip-dhcp-ping.png)
-
-So let's `scp` the script `team.sh` into machine, then `ssh` into it and we can run that script to setup team machine. Assuming that server is running at ip `10.254.1.1` and in network `10.254.1.0/24` so we will choose client ip is `10.254.1.2`. Below is an example of full command running `team.sh`:
+Let's copy the script `team.sh` into machine via `scp`, then `ssh` into it and we can run that script to setup team machine. The script require these parameters:
 
 ```bash
-./team.sh -s https://download1479.mediafire.com/25o8m8prcfjgcB-GE4TSzFmlAv7zU2Gdki_fY9jydo1cBScSvPXrDPFIxGWwEoc52Nfaw0tLfEkBjQRWSuN-9udgZ_5D1891J1Y6H0ltgo7aS8j9c5tm-036JGJ-Qp3Y-Ci6YSAKLyBODXAx97zqR6l0l5qZm1W-65sbS33qfSMXxQ/vszd1tzthg1fi3s/services_1.zip --cip 10.254.1.2 --sip 10.254.1.1
+./team.sh [OPTION]... --out INTERFACE_OUT --team TEAM_NUMBER -s SERVICE_URL
+```
+Below is an example of full command running `team.sh`:
+
+```bash
+./team.sh --out ens33 --team 1 -s https://github.com/
 ```
 
-If a challenge need to put flag via SSH, you can copy public key from central in `/root/.ssh/id_rsa.pub` into team machine.
+If a challenge need to put flag via SSH, you can copy public key from `central` in `/root/.ssh/id_rsa.pub` into team machine.
 
-Now we want to make team machine can be accessed from the internet, we will use openvpn to achieve that. With team 1, transfer `/root/proxy1/files/proxy1.ovpn` from vps (which hosts openvpn-server) to team machine at `/etc/openvpn/client` and rename it from `proxy1.ovpn` into `proxy1.conf`:
+Now we want to make team machine can be accessed from the internet, we will use openvpn to achieve that. With team 1, transfer `proxy1.ovpn` from vps (which hosts openvpn-server) to team machine at `/etc/openvpn/client` and rename it from `proxy1.ovpn` into `proxy1.conf`:
 
 ![](.images/vps-proxy1-ovpn-path.png)
 
@@ -151,8 +154,8 @@ To start openvpn on team 1 and with filename of config is `proxy1.conf`, we just
 systemctl start openvpn-client@proxy1
 ```
 
-Now team 1 has joined network of openvpn, we just need to download `client.ovpn` from vps (at `/root/client/files/client.ovpn`) and run on our host machine and we can SSH into team 1 machine from net:
+Now team 1 has joined network of openvpn, we just need to generate and download `client.ovpn` from vps, then run on our host machine and we can SSH into team 1 machine from net:
 
 ![](.images/ssh-to-proxy1.png)
 
-Setup for team 2 is similar as team 1.
+Setup for team 2 is similar as team 1, remember to change `TEAM_NUMBER` to `2`
