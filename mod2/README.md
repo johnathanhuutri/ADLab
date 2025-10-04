@@ -15,6 +15,32 @@ First, we will need to install 3 network adapter on **central** machine (remembe
 
 ![](.images/central-vmware-adapter.png)
 
+Then we go to `Edit -> Virtual Network Editor...`:
+
+![](.images/path-virtual-network-editor.png)
+
+and click `Change Settings` to check **VMnet2** and **VMnet3** and add if they exist:
+
+![](.images/virtual-network-editor-change-settings.png)
+
+We can see there are no VMnet2 and VMnet3:
+
+![](.images/vmnet-listing-before-add.png)
+
+To add new VMnet, just click at `Add Network..`:
+
+![](.images/add-new-vmnet.png)
+
+Then select VMnet2 and click `OK`:
+
+![](.images/select-new-vmnet.png)
+
+Do the same with VMnet3!
+
+Check again and we see that VMnet2 and VMnet3 have been added successfully:
+
+![](.images/vmnet-listing-after-add.png)
+
 ### ------ **Team machine**
 
 Now we will config `Network Adapter` of team 1 into **VMnet1**:
@@ -24,22 +50,6 @@ Now we will config `Network Adapter` of team 1 into **VMnet1**:
 Then we will config `Network Adapter` of team 2 into **VMnet2**:
 
 ![](.images/team2-vmware-adapter.png)
-
-Then we go to `Edit -> Virtual Network Editor...`:
-
-![](.images/path-virtual-network-editor.png)
-
-and click `Change Settings` to config **VMnet1** and **VMnet2**:
-
-![](.images/virtual-network-editor-change-settings.png)
-
-Now we will want 2 vmnets have both **Host connection** connected and **DHCP** enabled by ticking at 2 boxes:
-
-![](.images/virtual-network-editor-tick-box.png)
-
-and it should look like this:
-
-![](.images/virtual-network-editor-result.png)
 
 That's all we needed. Now let's setup necessary stuff!
 
