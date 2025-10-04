@@ -11,15 +11,13 @@ ip_lo=""
 export EASYRSA_BATCH=1
 export DEBIAN_FRONTEND=noninteractive
 
-
-
 usage() {
 	cat <<EOF
-Usage: $0 [OPTION]... -f <FORCAD-URL> -c <CHECKER-URL> --lo <SERVER-IP> --ip1 <IP1> --ip2 <IP2>
+Usage: $0 [OPTION]... --lo <SERVER-IP> --ip1 <IP1> --ip2 <IP2> [-f FORCAD_URL] [-c CHECKER_URL]
 
 Options:
-  -f, --forcad-url              link to download ForcAD.zip
-  -c, --checker-url             link to download checkers.zip
+  -f, --forcad-url              link to download ForcAD.zip (or ensure ForcAD.zip exists locally)
+  -c, --checker-url             link to download checkers.zip (or ensure checkers.zip exists locally)
   --lo                          ip of server for general use
   --ip1                         ip of server to communicate with team1
   --ip2                         ip of server to communicate with team2
@@ -61,7 +59,7 @@ docker_installation() {
 	apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 }
 
-forcad_configuration() {
+forcad_setup() {
 	printf "\n\n\n${RED}### ForcAD configuration ###${NC}\n"
 
 	wget $forcad_url -O /tmp/ForcAD.zip
@@ -70,7 +68,7 @@ forcad_configuration() {
 	unzip -o /tmp/checkers.zip -d /ForcAD    # Overwrite existed checkers
 
 	cd /ForcAD
-	find checkers -mindepth 1 -type d -exec chmod +x "{}/checker.py" \;
+	find checkers -name checker.py -type f -exec chmod +x {} \;
 	cp /root/.ssh/id_rsa ./checkers
 	chmod 644 ./checkers/id_rsa
 	pip3 install -r cli/requirements.txt
@@ -83,8 +81,6 @@ network_configuration() {
 	echo """network:
     version: 2
     ethernets:
-        lo:
-            addresses: [$ip_lo/24]
         ens33:
             optional: true
             dhcp4: true
@@ -173,12 +169,15 @@ while getopts ":hf:c:-:" opt; do
 	esac
 done
 
-if [[ -z $forcad_url || -z $checker_url || -z $ip_1 || -z $ip_2 || -z $ip_lo ]]; then
-	echo "Error: Missing required arguments"
-	usage
-fi
+required_vars=(forcad_url checker_url ip_1 ip_2 ip_lo)
+for var in "${required_vars[@]}"; do
+    if [ -z "${!var}" ]; then
+        echo "Error: Missing required argument: $var"
+        usage
+    fi
+done
 
 basic_setup
 docker_installation
-forcad_installation
+forcad_setup
 network_configuration

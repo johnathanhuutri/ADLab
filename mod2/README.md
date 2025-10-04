@@ -20,33 +20,33 @@ First, we will need to install 3 network adapter on **central** machine (remembe
 - `Network Adapter 2` is set to **VMnet1**
 - `Network Adapter 3` is set to **VMnet2**:
 
-![](images/central-vmware-adapter.png)
+![](.images/central-vmware-adapter.png)
 
 ### ------ **Team machine**
 
 Now we will config `Network Adapter` of team 1 into **VMnet1**:
 
-![](images/team1-vmware-adapter.png)
+![](.images/team1-vmware-adapter.png)
 
 Then we will config `Network Adapter` of team 2 into **VMnet2**:
 
-![](images/team2-vmware-adapter.png)
+![](.images/team2-vmware-adapter.png)
 
 Then we go to `Edit -> Virtual Network Editor...`:
 
-![](images/path-virtual-network-editor.png)
+![](.images/path-virtual-network-editor.png)
 
 and click `Change Settings` to config **VMnet1** and **VMnet2**:
 
-![](images/virtual-network-editor-change-settings.png)
+![](.images/virtual-network-editor-change-settings.png)
 
 Now we will want 2 vmnets have both **Host connection** connected and **DHCP** enabled by ticking at 2 boxes:
 
-![](images/virtual-network-editor-tick-box.png)
+![](.images/virtual-network-editor-tick-box.png)
 
 and it should look like this:
 
-![](images/virtual-network-editor-result.png)
+![](.images/virtual-network-editor-result.png)
 
 That's all we needed. Now let's setup necessary stuff!
 
@@ -110,7 +110,7 @@ nginx -t
 
 If config is correct, we will get successful message:
 
-![](images/nginx-check-config.png)
+![](.images/nginx-check-config.png)
 
 With correct config, we will need to restart nginx service to update with new configuration:
 
@@ -124,9 +124,9 @@ Central machine is now set. Let's setup on team machine!
 
 With option **Host connection** connected we have configured previously, our host machine can ping to vmware machine of team 1 and team 2 with ip assigned by DHCP:
 
-![](images/team1-ip-dhcp.png)
+![](.images/team1-ip-dhcp.png)
 
-![](images/team1-ip-dhcp-ping.png)
+![](.images/team1-ip-dhcp-ping.png)
 
 So let's `scp` the script `team.sh` into machine, then `ssh` into it and we can run that script to setup team machine. Assuming that server is running at ip `10.254.1.1` and in network `10.254.1.0/24` so we will choose client ip is `10.254.1.2`. Below is an example of full command running `team.sh`:
 
@@ -138,9 +138,9 @@ If a challenge need to put flag via SSH, you can copy public key from central in
 
 Now we want to make team machine can be accessed from the internet, we will use openvpn to achieve that. With team 1, transfer `/root/proxy1/files/proxy1.ovpn` from vps (which hosts openvpn-server) to team machine at `/etc/openvpn/client` and rename it from `proxy1.ovpn` into `proxy1.conf`:
 
-![](images/vps-proxy1-ovpn-path.png)
+![](.images/vps-proxy1-ovpn-path.png)
 
-![](images/proxy1-ovpn-path.png)
+![](.images/proxy1-ovpn-path.png)
 
 To start openvpn on team 1 and with filename of config is `proxy1.conf`, we just need to type:
 
@@ -150,6 +150,6 @@ systemctl start openvpn-client@proxy1
 
 Now team 1 has joined network of openvpn, we just need to download `client.ovpn` from vps (at `/root/client/files/client.ovpn`) and run on our host machine and we can SSH into team 1 machine from net:
 
-![](images/ssh-to-proxy1.png)
+![](.images/ssh-to-proxy1.png)
 
 Setup for team 2 is similar as team 1.
