@@ -35,9 +35,9 @@ Do the same with VMnet3:
 
 ![](.images/select-new-vmnet3.png)
 
-Check again and we see that VMnet2 and VMnet3 have been added successfully:
+Check again and we see that VMnet2 and VMnet3 have been added successfully. Now click `Apply` and `OK` to close this popup:
 
-![](.images/vmnet-listing-after-add.png)
+![](.images/click-apply-and-ok-after-adding-vmnet.png)
 
 That's good! Let's setup our team machines!
 
