@@ -4,13 +4,6 @@
 
 > 2 machines for teams containing services
 
-# Application
-- [ForcAD](https://github.com/pomo-mondreganto/ForcAD/releases/tag/v1.4.0)
-- [Docker](https://docs.docker.com/engine/install/ubuntu/)
-- Openvpn
-
-# Setup
-
 ## VMware configuration
 
 ### ------ **Central machine**
