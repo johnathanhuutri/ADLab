@@ -19,13 +19,9 @@ Then we go to `Edit -> Virtual Network Editor...`:
 
 ![](.images/path-virtual-network-editor.png)
 
-and click `Change Settings` to check **VMnet2** and **VMnet3** and add if they exist:
+As you can see I don't have VMnet2 and VMnet3, so let's add them. Click at `Change Settings` to gain permission:
 
 ![](.images/virtual-network-editor-change-settings.png)
-
-We can see there are no VMnet2 and VMnet3:
-
-![](.images/vmnet-listing-before-add.png)
 
 To add new VMnet, just click at `Add Network..`:
 
@@ -40,6 +36,8 @@ Do the same with VMnet3!
 Check again and we see that VMnet2 and VMnet3 have been added successfully:
 
 ![](.images/vmnet-listing-after-add.png)
+
+That's good! Let's setup our team machines!
 
 ### ------ **Team machine**
 
