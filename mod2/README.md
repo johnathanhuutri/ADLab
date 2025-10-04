@@ -29,9 +29,11 @@ To add new VMnet, just click at `Add Network..`:
 
 Then select VMnet2 and click `OK`:
 
-![](.images/select-new-vmnet.png)
+![](.images/select-new-vmnet2.png)
 
-Do the same with VMnet3!
+Do the same with VMnet3:
+
+![](.images/select-new-vmnet3.png)
 
 Check again and we see that VMnet2 and VMnet3 have been added successfully:
 
