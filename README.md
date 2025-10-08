@@ -10,6 +10,7 @@ This repo contains 3 labs and with each lab, you will need to config differently
 - [Challenge Writing](#challenge-writing-menu)
 - [Checker Writing](#checker-writing-menu)
 - [Flag submission](#flag-submission-menu)
+- [ForcAD Instruction](#forcad-instruction-menu)
 - [ForcAD Issues](#forcad-issues-menu)
     - [Issue 1: Change admin password](#issue-1-change-admin-password-menu)
     - [Issue 2: Debug docker](#issue-2-debug-docker-menu)
@@ -168,7 +169,7 @@ Explain:
 - `TOKEN` can be retrieved by executing `control.py print_tokens` on central machine
 - `FLAG_1`, `FLAG_2` are flags
 
-# ForcAD Guideline ([Menu](#menu))
+# ForcAD Instruction ([Menu](#menu))
 
 First, you will need to write config to `config.yml` then run:
 
