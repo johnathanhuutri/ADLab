@@ -26,7 +26,7 @@ Just type ENTER (option 1 for passwordless) and we get the first configuration:
 
 ![](.images/openvpn-create-first-client-successful.png)
 
-This configuration will then be distribute to our player for accessing team machine. Now let's create 2 more config for team 1 and team 2:
+This configuration will then be distribute to our player for accessing team machine. Now let's create 2 more configs for team 1 and team 2:
 
 ![](.images/openvpn-create-team1.png)
 
@@ -40,7 +40,7 @@ Wait, we have not done yet! We will need to config a few things before it is don
 
 ![](.images/list-etc-openvpn-ccd.png)
 
-Then we will create 3 files called `player`, `team1` and `team2` with the content as following (name of file has to match name of VPN client, if you create file with different name, the static ip will not be assigned):
+In here, we will create 3 files called `player`, `team1` and `team2` with the content as following (name of file has to match name of VPN client, if you create file with different name, the static ip will not be assigned):
 
 player:
 ```
@@ -57,11 +57,11 @@ team2:
 ifconfig-push 10.8.0.20 255.255.255.0
 ```
 
-Check those 3 files:
+Let's check those 3 files:
 
 ![](.images/check-openvpn-ccd.png)
 
-Now we will remove this line in `/etc/openvpn/server.conf`
+Now we will have to remove this line in `/etc/openvpn/server.conf`, you can also comment out that line:
 
 ```
 push "redirect-gateway def1 bypass-dhcp"
@@ -69,13 +69,13 @@ push "redirect-gateway def1 bypass-dhcp"
 
 ![](.images/comment-out-push-gateway.png)
 
-Now, let's restart openvpn:
+Let's restart openvpn:
 
 ```bash
 sudo systemctl restart openvpn
 ```
 
-Currently, client use `player.ovpn` still cannot connect to teams, we just need to run this command to enable that:
+Currently, client use `player.ovpn` still cannot connect to teams, we just need to run this command:
 
 ```
 iptables -A FORWARD -s 10.8.0.100 -d 10.8.0.0/24 -j ACCEPT
@@ -221,20 +221,40 @@ Below is an example of full command running `team.sh`:
 
 If a challenge need to put flag via SSH, you can copy public key from `central` in `/root/.ssh/id_rsa.pub` into team machine.
 
-Now we want to make team machine can be accessed from the internet, we will use openvpn to achieve that. With team 1, transfer `proxy1.ovpn` from vps (which hosts openvpn-server) to team machine at `/etc/openvpn/client` and rename it from `proxy1.ovpn` into `proxy1.conf`:
+**After you setup services on both team machine, let's config the VPN!** Let's download VPN configs of 2 teams to our host:
 
-![](.images/vps-proxy1-ovpn-path.png)
+![](.images/download-team-configs-from-vps.png)
 
-![](.images/proxy1-ovpn-path.png)
+Then let's copy those configs to corresponding machines:
 
-To start openvpn on team 1 and with filename of config is `proxy1.conf`, we just need to type:
+![](.images/copy-team-configs-to-team-machine.png)
+
+Now, let's SSH to team 1, then move the file `team1.ovpn` from `/home/user/team1.ovpn` to `/etc/openvpn/team1.conf`:
+
+![](.images/team1-move-vpn-config-to-openvpn-folder.png)
+
+To start openvpn on team 1, type:
 
 ```bash
-systemctl start openvpn-client@proxy1
+sudo systemctl start openvpn@team1
 ```
 
-Now team 1 has joined network of openvpn, we just need to generate and download `client.ovpn` from vps, then run on our host machine and we can SSH into team 1 machine from net:
+If VPN is on, we can see ip is assigned and we can ping to server:
 
-![](.images/ssh-to-proxy1.png)
+![](.images/team1-openvpn-connect.png)
 
-Setup for team 2 is similar as team 1, remember to change `TEAM_NUMBER` to `2`
+On our host, or another host, run config `player.ovpn` first:
+
+![](.images/host-run-openvpn-config.png)
+
+Now let's try to SSH to team 1, whose IP is `10.8.0.10`:
+
+![](.images/host-try-to-ssh-to-team1.png)
+
+Setup for team 2 is similar:
+
+![](.images/team2-openvpn-connect.png)
+
+If everything is correct, we can SSH to our team 2:
+
+![](.images/host-try-to-ssh-to-team2.png)
