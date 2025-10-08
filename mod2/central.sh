@@ -142,6 +142,7 @@ network_configuration() {
     netplan apply
 
     iptables -P FORWARD DROP
+    iptables -I FORWARD 1 -d 192.168.0.0/16 -j DROP
     iptables -I FORWARD -i team1 -o out -j ACCEPT
     iptables -I FORWARD -i out -o team1 -j ACCEPT
     iptables -I FORWARD -i team2 -o out -j ACCEPT
