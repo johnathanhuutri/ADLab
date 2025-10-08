@@ -201,11 +201,11 @@ If you want to change admin password (username is `forcad`, password is forgotte
 sudo docker exec -it <container-id> bash
 ```
 
-![image](images/issue1_docker_ps.png)
+![image](.images/issue1_docker_ps.png)
 
 Then execute `psql`. If you get error as following:
 
-![image](images/issue1_psql_error.png)
+![image](.images/issue1_psql_error.png)
 
 You will need to run this command first:
 
@@ -215,7 +215,7 @@ export PGUSER=forcad
 
 Then run `psql` again will give us PostGreSQL shell:
 
-![image](images/issue1_psql_successful.png)
+![image](.images/issue1_psql_successful.png)
 
 Now you want to change password of forcad user, type:
 
@@ -229,15 +229,15 @@ Let's say you want to change forcad's password to `abc123`, type:
 ALTER USER forcad WITH PASSWORD 'abc123';
 ```
 
-![image](images/issue1_change_pass_done.png)
+![image](.images/issue1_change_pass_done.png)
 
 If the command is correct, it will output that string `ALTER ROLE`. Note that the shell I enter SQL command has `=`, not the one with `-`. This is the correct one:
 
-![image](images/issue1_correct_shell.png)
+![image](.images/issue1_correct_shell.png)
 
 This is the wrong shell:
 
-![image](images/issue1_wrong_shell.png)
+![image](.images/issue1_wrong_shell.png)
 
 If you are in the wrong shell, just press `Ctrl + C` to get back the right shell!
 
@@ -255,15 +255,15 @@ It will ask for your password, then you enter password and you can get into Post
 
 While a docker is booting, it will echo data out. We can get all data just by using `docker logs` to see if the init script works as desired. Let's check with PostGreSQL container:
 
-![image](images/issue2_postgres_containerid.png)
+![image](.images/issue2_postgres_containerid.png)
 
 It will output something useful if you want to debug where it gets error. Another container you might need to debug is initializer:
 
-![image](images/issue2_initializer_containerid.png)
+![image](.images/issue2_initializer_containerid.png)
 
 The logs can show you if there are any steps broken:
 
-![image](images/issue2_initializer_logs.png)
+![image](.images/issue2_initializer_logs.png)
 
 ## Issue 3: Mouting in Docker-in-Docker ([Menu](#menu))
 
@@ -298,11 +298,11 @@ After we access D2, we check D2 has `/D2` and host has `/D2` but not D1. You can
 
 When you run ForcAD but it doesn't work as normal, you can try to read the logs from initializer:
 
-![image](images/issue4_initializer_logs.png)
+![image](.images/issue4_initializer_logs.png)
 
 Still error from postgres, let's see its logs:
 
-![image](images/issue4_postgres_logs.png)
+![image](.images/issue4_postgres_logs.png)
 
 No space left? So the only way is to prune (delete) everything from docker:
 
@@ -310,7 +310,7 @@ No space left? So the only way is to prune (delete) everything from docker:
 docker system prune --volumes --all
 ```
 
-![image](images/issue4_docker_system_prune.png)
+![image](.images/issue4_docker_system_prune.png)
 
 ## Issue 5: Install apt package for checker ([Menu](#menu))
 
@@ -330,7 +330,7 @@ The docker that is responsible for checking services is `celery` and Dockerfile 
 $FORCAD_PATH/docker_config/celery/Dockerfile
 ```
 
-![image](images/issue5_celery_dockerfile.png)
+![image](.images/issue5_celery_dockerfile.png)
 
 So you can add docker command to build apt package, such as you want to install curl, just add this line:
 
@@ -340,7 +340,7 @@ RUN apt-get update && apt-get install -y curl
 
 You can add that line at anywhere in Dockerfile but I prefer somewhere at the end of file:
 
-![image](images/issue5_add_docker_command.png)
+![image](.images/issue5_add_docker_command.png)
 
 Then build the image and start again:
 
@@ -351,19 +351,19 @@ sudo ./control.py start
 
 If you want to check, you can access the celery docker:
 
-![image](images/issue5_celery_containerid.png)
+![image](.images/issue5_celery_containerid.png)
 
 If you want to check if your checker works as expected or not, you can run it directly with that shell:
 
-![image](images/issue5_test_checker.png)
+![image](.images/issue5_test_checker.png)
 
 Nothing output means it successfully check! If it has error output, you can also see that when login to admin and click to service of team, it will show error like this:
 
-![image](images/issue5_web_error.png)
+![image](.images/issue5_web_error.png)
 
 When we take that command and run in celery shell, its output is the same:
 
-![image](images/issue5_console_error.png)
+![image](.images/issue5_console_error.png)
 
 ## Issue 6: Cannot ssh to team ([Menu](#menu))
 
@@ -377,7 +377,7 @@ Solution is to shutdown ssh server on your host. SSH again will jump directly to
 
 When building docker images, you get this error:
 
-![image](images/docker-tls-handshake-timeout.png)
+![image](.images/docker-tls-handshake-timeout.png)
 
 That means docker cannot resolve the domain. To fix that, add the following content to file `/etc/docker/daemon.json`:
 
