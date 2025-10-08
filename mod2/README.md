@@ -40,34 +40,40 @@ Wait, we have not done yet! We will need to config a few things before it is don
 
 ![](.images/list-etc-openvpn-ccd.png)
 
-In here, we will create 3 files called `player`, `team1` and `team2` with the content as following (name of file has to match name of VPN client, if you create file with different name, the static ip will not be assigned):
-
-player:
-```
-ifconfig-push 10.8.0.100 255.255.255.0
-```
+In here, we will create 2 files called `team1` and `team2` with the content as following (name of file has to match name of VPN client, if you create file with different name, the static ip will not be assigned):
 
 team1:
 ```
-ifconfig-push 10.8.0.10 255.255.255.0
+ifconfig-push 10.8.0.11 255.255.255.0
 ```
 
 team2:
 ```
-ifconfig-push 10.8.0.20 255.255.255.0
+ifconfig-push 10.8.0.12 255.255.255.0
 ```
 
-Let's check those 3 files:
+Let's check those 2 files:
 
 ![](.images/check-openvpn-ccd.png)
 
-Now we will have to remove this line in `/etc/openvpn/server.conf`, you can also comment out that line:
+Now we will run these commands to config `server.conf` in `/etc/openvpn/server.conf`:
 
-```
-push "redirect-gateway def1 bypass-dhcp"
+```bash
+sed -i 's/push "redirect-gateway def1 bypass-dhcp"/#push "redirect-gateway def1 bypass-dhcp"/g' /etc/openvpn/server.conf
+sed -i 's/server 10.8.0.0 255.255.255.0/#server 10.8.0.0 255.255.255.0/g' /etc/openvpn/server.conf
+echo '' >> /etc/openvpn/server.conf
+echo 'server 10.8.0.0 255.255.255.0 nopool' >> /etc/openvpn/server.conf
+echo 'ifconfig-pool 10.8.0.20 10.8.0.254' >> /etc/openvpn/server.conf
+echo 'duplicate-cn' >> /etc/openvpn/server.conf
 ```
 
-![](.images/comment-out-push-gateway.png)
+Before we modify `server.conf`:
+
+![](.images/server-conf-before-modify.png)
+
+After we modify `server.conf`:
+
+![](.images/server-conf-after-modify.png)
 
 Let's restart openvpn:
 
@@ -78,7 +84,7 @@ sudo systemctl restart openvpn
 Currently, client use `player.ovpn` still cannot connect to teams, we just need to run this command:
 
 ```
-iptables -A FORWARD -s 10.8.0.100 -d 10.8.0.0/24 -j ACCEPT
+iptables -A FORWARD -m iprange --src-range 10.8.0.20-10.8.0.254 -d 10.8.0.0/24 -j ACCEPT
 ```
 
 That's done for VPN configuration. Let's move on!
