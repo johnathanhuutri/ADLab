@@ -5,7 +5,7 @@ This repo contains 3 labs and with each lab, you will need to config differently
 - Lab2: Central <--> Service
 - Lab3: Central
 
-## Menu
+# Menu
 
 - [Challenge Writing](#challenge-writing-menu)
 - [Checker Writing](#checker-writing-menu)
@@ -19,7 +19,7 @@ This repo contains 3 labs and with each lab, you will need to config differently
     - [Issue 6: Cannot ssh to team](#issue-6-cannot-ssh-to-team-menu)
     - [Issue 7: Use output of `put` as flag_id of `get`](#issue-7-use-output-of-put-as-flag_id-of-get-menu)
 
-## Challenge Writing ([Menu](#menu))
+# Challenge Writing ([Menu](#menu))
 
 ```
 FROM ubuntu:22.04
@@ -75,7 +75,7 @@ After it built successful, we can run docker image now:
 docker compose up --detach
 ```
 
-## Checker Writing ([Menu](#menu))
+# Checker Writing ([Menu](#menu))
 
 I have a template for checker [here](template/checkers).
 
@@ -152,24 +152,46 @@ def get(self, flag_id: str, flag: str, vuln: str):
 
 When running `init.sh` script, the script has already generatee a ssh key and copied to `/ForcAD/checkers` so in case you want to put and get flag via ssh of root, you can write script using key at `/checkers/id_rsa`
 
-## Flag submission ([Menu](#menu))
+# Flag submission ([Menu](#menu))
 
 API for submitting flag:
 
 ```bash
 curl -X PUT \
-     -H "X-Team-Token: $TOKEN" \
-     -d '["abcd", "1234"]' \
-     10.10.0.1/flags
+     -H "X-Team-Token: <TOKEN>" \
+     -d '["<FLAG_1>", "<FLAG_2>"]' \
+     10.254.0.254/flags
 ```
 
 Explain:
-- `$TOKEN` can be retrieved by executing `control.py print_tokens` on central machine
-- `abcd`, `1234` are flags
+- `TOKEN` can be retrieved by executing `control.py print_tokens` on central machine
+- `FLAG_1`, `FLAG_2` are flags
 
-## ForcAD Issues ([Menu](#menu))
+# ForcAD Guideline ([Menu](#menu))
 
-### Issue 1: Change admin password ([Menu](#menu))
+First, you will need to write config to `config.yml` then run:
+
+```bash
+./control.py setup
+./control.py build
+./control.py start
+```
+
+To get team's token, run:
+
+```bash
+./control.py print_tokens
+```
+
+To stop ForcAD, run:
+
+```bash
+./control.py reset
+```
+
+# ForcAD Issues ([Menu](#menu))
+
+## Issue 1: Change admin password ([Menu](#menu))
 
 - ***Situation 1: Forgotten password***
 
@@ -229,7 +251,7 @@ psql -h 0.0.0.0 -U forcad
 
 It will ask for your password, then you enter password and you can get into PostGreSQL shell! With that shell, you can do as instructed in ***Case 1*** to change password.
 
-### Issue 2: Debug docker ([Menu](#menu))
+## Issue 2: Debug docker ([Menu](#menu))
 
 While a docker is booting, it will echo data out. We can get all data just by using `docker logs` to see if the init script works as desired. Let's check with PostGreSQL container:
 
@@ -243,7 +265,7 @@ The logs can show you if there are any steps broken:
 
 ![image](images/issue2_initializer_logs.png)
 
-### Issue 3: Mouting in Docker-in-Docker ([Menu](#menu))
+## Issue 3: Mouting in Docker-in-Docker ([Menu](#menu))
 
 > Ref: https://stackoverflow.com/a/62413225/17872100
 
@@ -270,7 +292,7 @@ sudo docker run -v /D2:/D2 -it D2
 After we access D2, we check D2 has `/D2` and host has `/D2` but not D1. You can read reference (on title) for more details.
 
 
-### Issue 4: No space left on device ([Menu](#menu))
+## Issue 4: No space left on device ([Menu](#menu))
 
 > Ref: https://stackoverflow.com/a/75036976/17872100
 
@@ -290,7 +312,7 @@ docker system prune --volumes --all
 
 ![image](images/issue4_docker_system_prune.png)
 
-### Issue 5: Install apt package for checker ([Menu](#menu))
+## Issue 5: Install apt package for checker ([Menu](#menu))
 
 > Ref: https://github.com/pomo-mondreganto/ForcAD/wiki/Writing-a-checker#modifying-checker-container
 
@@ -343,13 +365,43 @@ When we take that command and run in celery shell, its output is the same:
 
 ![image](images/issue5_console_error.png)
 
-### Issue 6: Cannot ssh to team ([Menu](#menu))
+## Issue 6: Cannot ssh to team ([Menu](#menu))
 
 It can be that both your host and docker team is running SSH server so when a person SSH, it will connect to host, not docker.
 
 Solution is to shutdown ssh server on your host. SSH again will jump directly to docker!
 
-### Issue 7: Use output of `put` as flag_id of `get` ([Menu](#menu))
+## Issue 7: Docker TLS handshake timeout
+
+> Ref: https://stackoverflow.com/a/44668720
+
+When building docker images, you get this error:
+
+![image](images/docker-tls-handshake-timeout.png)
+
+That means docker cannot resolve the domain. To fix that, add the following content to file `/etc/docker/daemon.json`:
+
+```
+{
+  "dns": ["8.8.8.8", "8.8.4.4"]
+}
+```
+
+Then restart docker:
+
+```bash
+systemctl restart docker
+```
+
+And check again:
+
+```bash
+docker run busybox nslookup google.com
+```
+
+However, if you 
+
+## Issue 7: Use output of `put` as flag_id of `get` ([Menu](#menu))
 
 > Ref: https://github.com/pomo-mondreganto/ForcAD/wiki/Writing-a-checker
 
