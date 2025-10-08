@@ -399,7 +399,7 @@ And check again:
 docker run busybox nslookup google.com
 ```
 
-However, if you 
+However, if you still counter the issue again, it might be because of your connection!
 
 ## Issue 7: Use output of `put` as flag_id of `get` ([Menu](#menu))
 
