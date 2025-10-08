@@ -17,7 +17,8 @@ This repo contains 3 labs and with each lab, you will need to config differently
     - [Issue 4: No space left on device](#issue-4-no-space-left-on-device-menu)
     - [Issue 5: Install apt package for checker](#issue-5-install-apt-package-for-checker-menu)
     - [Issue 6: Cannot ssh to team](#issue-6-cannot-ssh-to-team-menu)
-    - [Issue 7: Use output of `put` as flag_id of `get`](#issue-7-use-output-of-put-as-flag_id-of-get-menu)
+    - [Issue 7: Docker TLS handshake timeout](#issue-7-docker-tls-handshake-timeout-menu)
+    - [Issue 8: Use output of `put` as flag_id of `get`](#issue-8-use-output-of-put-as-flag_id-of-get-menu)
 
 # Challenge Writing ([Menu](#menu))
 
@@ -371,7 +372,7 @@ It can be that both your host and docker team is running SSH server so when a pe
 
 Solution is to shutdown ssh server on your host. SSH again will jump directly to docker!
 
-## Issue 7: Docker TLS handshake timeout
+## Issue 7: Docker TLS handshake timeout ([Menu](#menu))
 
 > Ref: https://stackoverflow.com/a/44668720
 
@@ -401,7 +402,7 @@ docker run busybox nslookup google.com
 
 However, if you still counter the issue again, it might be because of your connection!
 
-## Issue 7: Use output of `put` as flag_id of `get` ([Menu](#menu))
+## Issue 8: Use output of `put` as flag_id of `get` ([Menu](#menu))
 
 > Ref: https://github.com/pomo-mondreganto/ForcAD/wiki/Writing-a-checker
 
