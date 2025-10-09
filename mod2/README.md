@@ -95,8 +95,8 @@ That's done for VPN configuration. Let's move on!
 
 First, we will need to install 3 network adapter on **central** machine (remember to match VMnet with the correct adapter name):
 - `Network Adapter` is set to **NAT**
-- `Network Adapter 2` is set to **VMnet1**
-- `Network Adapter 3` is set to **VMnet2**:
+- `Network Adapter 2` is set to **VMnet2**
+- `Network Adapter 3` is set to **VMnet3**:
 
 ![](.images/central-vmware-adapter.png)
 
