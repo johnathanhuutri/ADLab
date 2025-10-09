@@ -181,11 +181,11 @@ events {
 stream {
     server {
         listen 40101;
-        proxy_pass 10.254.1.2:9001;
+        proxy_pass 10.254.1.1:9001;
     }
     server {
         listen 40201;
-        proxy_pass 10.254.2.2:9001;
+        proxy_pass 10.254.2.1:9001;
     }
 }
 ```
@@ -208,6 +208,14 @@ Now we just need to restart nginx service to update with new configuration:
 
 ```
 systemctl restart nginx
+```
+
+Finally, go to `/ForcAD`, write your `config.yml` then run:
+
+```bash
+./control.py setup
+./control.py build
+./control.py start
 ```
 
 Central machine is now set. Let's setup on team machine!
@@ -243,6 +251,7 @@ To start openvpn on team 1, type:
 
 ```bash
 sudo systemctl start openvpn@team1
+sudo systemctl enable openvpn@team1
 ```
 
 If VPN is on, we can see ip is assigned and we can ping to server:
@@ -253,7 +262,7 @@ On our host, or another host, run config `player.ovpn` first:
 
 ![](.images/host-run-openvpn-config.png)
 
-Now let's try to SSH to team 1, whose IP is `10.8.0.10`:
+Now let's try to SSH to team 1, whose IP is `10.8.0.11`:
 
 ![](.images/host-try-to-ssh-to-team1.png)
 
