@@ -14,9 +14,9 @@ usage() {
 Usage: $0 [OPTION]... [-f FORCAD_URL] [-c CHECKER_URL] [-s SERVICE_URL]
 
 Options:
-  -f, --forcad-url              link to download ForcAD.zip (omit to use local ForcAD.zip locally)
-  -c, --checker-url             link to download checkers.zip (omit to use local checkers.zip locally)
-  -s, --service-url             link to download services.zip (omit to use local services.zip locally)
+  -f, --forcad                  link to download ForcAD.zip (omit to use local ForcAD.zip locally)
+  -c, --checker                 link to download checkers.zip (omit to use local checkers.zip locally)
+  -s, --service                 link to download services.zip (omit to use local services.zip locally)
   -h, --help                    display help message and exit
 
 Example: $0 -f https://github.com/ForcAD.zip -c https://github.com/checkers.zip -s https://github.com/services.zip
@@ -50,6 +50,7 @@ basic_setup() {
     echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
     apt-get install -y build-essential iptables-persistent jq openvpn unzip python3-pip
     ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa <<<y >/dev/null 2>&1
+    echo "$SUDO_USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
     check_and_fetch "$forcad" "ForcAD.zip"
     check_and_fetch "$checker" "checkers.zip"
@@ -122,15 +123,15 @@ while getopts ":hf:c:s:-:" opt; do
             ;;
         -) # Handle long options
             case $OPTARG in
-                forcad-url)
+                forcad)
                     forcad="${!OPTIND}" # Next argument is the value
                     OPTIND=$((OPTIND + 1))     # Shift to next option
                     ;;
-                checker-url)
+                checker)
                     checker="${!OPTIND}" # Next argument is the value
                     OPTIND=$((OPTIND + 1))    # Shift to next option
                     ;;
-                service-url)
+                service)
                     service="${!OPTIND}" # Next argument is the value
                     OPTIND=$((OPTIND + 1))    # Shift to next option
                     ;;
