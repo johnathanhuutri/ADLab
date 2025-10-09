@@ -80,9 +80,9 @@ basic_setup() {
     apt-get clean
     ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa <<<y >/dev/null 2>&1
 
-    check_and_fetch "$service" "service.zip"
+    check_and_fetch "$service" "services.zip"
 
-    unzip -o service.zip -d /
+    unzip -o services.zip -d /
 }
 
 docker_installation() {

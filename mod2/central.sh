@@ -1,6 +1,8 @@
 #!/bin/bash
 
 RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 forcad=""
 checker=""
@@ -54,6 +56,9 @@ basic_setup() {
     echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
     apt-get install -y build-essential iptables-persistent nginx jq openvpn unzip python3-pip
     ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa <<<y >/dev/null 2>&1
+    if [ ! -f "/etc/sudoers.d/01-passwordless-user" ]; then
+        echo "$SUDO_USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/01-passwordless-user
+    fi
 
     check_and_fetch "$forcad" "ForcAD.zip"
     check_and_fetch "$checker" "checkers.zip"
@@ -108,8 +113,12 @@ network_configuration() {
     mac_team1=$(cat /sys/class/net/$team1/address)
     mac_team2=$(cat /sys/class/net/$team2/address)
 
-    rm -rf /etc/netplan/*
-    echo """network:
+    # --- Check & apply netplan if not configured ---
+    if [ ! -f /etc/netplan/01-network.yaml ]; then
+        echo "${YELLOW}Applying new Netplan configuration...${NC}"
+        rm -rf /etc/netplan/*
+        cat <<EOF > /etc/netplan/01-network.yaml
+network:
     version: 2
     ethernets:
         lo:
@@ -137,22 +146,39 @@ network_configuration() {
             addresses: [10.254.2.1/24]
             match:
                 macaddress: $mac_team2
-            set-name: team2""" > "/etc/netplan/01-network.yaml"
-    chmod 600 "/etc/netplan/01-network.yaml"
-    netplan apply
+            set-name: team2
+EOF
+        chmod 600 /etc/netplan/01-network.yaml
+        netplan apply
+    else
+        echo "${GREEN}Netplan already configured, skipping...${NC}"
+    fi
 
+    # --- IP forwarding ---
+    echo 'net.ipv4.ip_forward = 1' > /etc/sysctl.d/99-ipforward.conf
+    sudo sysctl --system
+
+    # --- Check & add iptables rules only if missing ---
     iptables -P FORWARD DROP
-    iptables -I FORWARD 1 -d 192.168.0.0/16 -j DROP
-    iptables -I FORWARD -i team1 -o out -j ACCEPT
-    iptables -I FORWARD -i out -o team1 -j ACCEPT
-    iptables -I FORWARD -i team2 -o out -j ACCEPT
-    iptables -I FORWARD -i out -o team2 -j ACCEPT
+
+    add_rule_if_missing() {
+        rule="$1"
+        exist="$(iptables -C $rule)"
+
+        echo $exist
+        if [ -z "$exist" ]; then
+            iptables -A $rule
+            echo "Added rule: $rule"
+        fi
+    }
+
+    add_rule_if_missing "FORWARD -i team1 -o out ! -d 192.168.0.0/16 -j ACCEPT"
+    add_rule_if_missing "FORWARD -i out -o team1 -j ACCEPT"
+    add_rule_if_missing "FORWARD -i team2 -o out ! -d 192.168.0.0/16 -j ACCEPT"
+    add_rule_if_missing "FORWARD -i out -o team2 -j ACCEPT"
     iptables -t nat -I POSTROUTING -o out -j MASQUERADE
 
     iptables-save > /etc/iptables/rules.v4
-
-    echo 'net.ipv4.ip_forward = 1' > /etc/sysctl.d/99-ipforward.conf
-    sudo sysctl --system
 }
 
 
