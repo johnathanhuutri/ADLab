@@ -136,14 +136,14 @@ network:
         team1:
             optional: true
             dhcp4: false
-            addresses: [10.254.1.1/24]
+            addresses: [10.254.1.254/24]
             match:
                 macaddress: $mac_team1
             set-name: team1
         team2:
             optional: true
             dhcp4: false
-            addresses: [10.254.2.1/24]
+            addresses: [10.254.2.254/24]
             match:
                 macaddress: $mac_team2
             set-name: team2

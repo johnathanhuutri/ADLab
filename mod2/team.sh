@@ -43,10 +43,10 @@ network_configuration() {
         out:
             optional: true
             dhcp4: true
-            addresses: [10.254.$team.2/24]
+            addresses: [10.254.$team.1/24]
             routes:
               - to: default
-                via: 10.254.$team.1
+                via: 10.254.$team.254
             nameservers:
                 addresses: [8.8.8.8, 8.8.4.4]
             match:
