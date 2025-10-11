@@ -78,16 +78,47 @@ After we modify `server.conf`:
 
 ![](.images/server-conf-after-modify.png)
 
-Let's restart openvpn:
+Let's restart and enable openvpn to run on startup:
 
 ```bash
 sudo systemctl restart openvpn
+sudo systemctl enable openvpn
 ```
 
-Currently, client use `player.ovpn` still cannot connect to teams, we just need to run this command:
+## Firewall configuration
 
-```
-iptables -A FORWARD -m iprange --src-range 10.8.0.20-10.8.0.254 -d 10.8.0.0/24 -j ACCEPT
+Normally, VPS only opens port 22 (SSH):
+
+![](.images/vps-firewall-opening-port.png)
+
+But as we have setup above, it uses port 1194 with UDP protocol so if a client wants to connect to our OpenVPN server, that port has to be opened:
+
+```bash
+sudo ufw allow 1194/udp
 ```
 
-That's done for VPN configuration. Let's move on!
+![](.images/vps-firewall-open-port-1194-udp.png)
+
+> You can use `iptables` instead but I prefer `ufw` because it's faster and more convenient!
+
+Next, generally on VPS, the policy for chain `FORWARD` is drop:
+
+![](.images/vps-policy-for-forward-chain.png)
+
+So if a client use `player.ovpn`, it still cannot connect to teams (ping result show that the packet has been redirected):
+
+![](.images/openvpn-player-try-to-ping-team.png)
+
+To allow that action, we just need to run this command on VPS:
+
+```bash
+sudo iptables -A FORWARD -m iprange --src-range 10.8.0.20-10.8.0.254 -d 10.8.0.0/24 -j ACCEPT
+```
+
+![](.images/vps-check-forward-rules-after-adding-rule.png)
+
+When we ping or connect again, it succeed:
+
+![](.images/openvpn-try-to-connect-to-teams.png)
+
+Congratulation! You have just configured your brand new OpenVPN server successfully.
