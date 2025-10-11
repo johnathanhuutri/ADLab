@@ -117,7 +117,7 @@ sudo iptables -A FORWARD -m iprange --src-range 10.8.0.20-10.8.0.254 -d 10.8.0.0
 
 ![](.images/vps-check-forward-rules-after-adding-rule.png)
 
-When we ping or connect again, it succeed:
+When we ping or connect again, it succeeds:
 
 ![](.images/openvpn-try-to-connect-to-teams.png)
 
