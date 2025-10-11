@@ -34,7 +34,7 @@ Now we have team1 and team2 profiles:
 
 Wait, we have not done yet! We will need to config a few things before it is done!
 
-## Assigning static IP
+## Client configuration - Assigning static IP
 
 Let's go to `/etc/openvpn/ccd`:
 
