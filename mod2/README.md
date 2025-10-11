@@ -4,18 +4,9 @@
 
 > 2 machines for teams containing services
 
-## VMware Configuration
+## VMnet Configuration
 
-### ------ **Central machine**
-
-First, we will need to install 3 network adapter on **central** machine (remember to match VMnet with the correct adapter name):
-- `Network Adapter` is set to **NAT**
-- `Network Adapter 2` is set to **VMnet2**
-- `Network Adapter 3` is set to **VMnet3**:
-
-![](.images/central-vmware-adapter.png)
-
-Then we go to `Edit -> Virtual Network Editor...`:
+In this lab, we will use **VMnet2** and **VMnet3** so we need to install those VMnets in `Virtual Network Editor` before we can use. On taskbar, select `Edit -> Virtual Network Editor...`:
 
 ![](.images/path-virtual-network-editor.png)
 
@@ -38,6 +29,17 @@ Do the same with VMnet3:
 Check again and we see that VMnet2 and VMnet3 have been added successfully. Now click `Apply` and `OK` to close this popup:
 
 ![](.images/click-apply-and-ok-after-adding-vmnet.png)
+
+## VMware Configuration
+
+### ------ **Central machine**
+
+For **central machine**, we will need 3 subnets, one for internet access, one for team 1 and one for team 2, so we will add 3 network adapter to this **central machine** (remember to match VMnet with the correct adapter name):
+- `Network Adapter` is set to **NAT**
+- `Network Adapter 2` is set to **VMnet2**
+- `Network Adapter 3` is set to **VMnet3**:
+
+![](.images/central-vmware-adapter.png)
 
 That's good! Let's setup our team machines!
 
