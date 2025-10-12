@@ -22,7 +22,7 @@ Just type ENTER (option 1 for passwordless client) and we get the first configur
 
 ![](.images/openvpn-create-first-client-successful.png)
 
-This configuration will then be distribute to our player for accessing team machines. Then we will run this command to modify our player config:
+This configuration will then be distribute to our player for accessing team machines. However, we will need to modify this config a little bit:
 
 ```bash
 sed -i 's/setenv opt block-outside-dns/#setenv opt block-outside-dns/g' player.ovpn
