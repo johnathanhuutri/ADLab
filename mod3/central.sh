@@ -1,28 +1,65 @@
 #!/bin/bash
 
 RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 forcad=""
 checker=""
 service=""
+out=""
 
 export EASYRSA_BATCH=1
 export DEBIAN_FRONTEND=noninteractive
 
 usage() {
     cat <<EOF
-Usage: $0 [OPTION]... [-f FORCAD_URL] [-c CHECKER_URL] [-s SERVICE_URL]
+Usage: $0 [OPTION]... --out INTERFACE_OUT [-f FORCAD_URL] [-c CHECKER_URL] [-s SERVICE_URL]
 
 Options:
+  --out                         interface name for accessing the internet
   -f, --forcad                  link to download ForcAD.zip (omit to use local ForcAD.zip locally)
   -c, --checker                 link to download checkers.zip (omit to use local checkers.zip locally)
   -s, --service                 link to download services.zip (omit to use local services.zip locally)
   -h, --help                    display help message and exit
 
-Example: $0 -f https://github.com/ForcAD.zip -c https://github.com/checkers.zip -s https://github.com/services.zip
+Example: $0 --out ens33 -f https://github.com/ -c https://github.com/ -s https://github.com/
 
 EOF
     exit
+}
+
+network_configuration() {
+    printf "\n\n\n${RED}### Network configuration ###${NC}\n"
+
+    mac_out=$(cat /sys/class/net/$out/address)
+
+    # --- Check & apply netplan if not configured ---
+    if [ ! -f /etc/netplan/01-network.yaml ]; then
+        echo "${YELLOW}Applying new Netplan configuration...${NC}"
+        rm -rf /etc/netplan/*
+        cat <<EOF > /etc/netplan/01-network.yaml
+network:
+    version: 2
+    ethernets:
+        lo:
+            addresses:
+                - 127.0.0.1/8
+                - 10.254.0.254/32
+        out:
+            optional: true
+            dhcp4: true
+            nameservers:
+                addresses: [8.8.8.8, 8.8.4.4]
+            match:
+                macaddress: $mac_out
+            set-name: out
+EOF
+        chmod 600 /etc/netplan/01-network.yaml
+        netplan apply
+    else
+        echo "${GREEN}Netplan already configured, skipping...${NC}"
+    fi
 }
 
 check_and_fetch() {
@@ -50,7 +87,9 @@ basic_setup() {
     echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
     apt-get install -y build-essential iptables-persistent jq openvpn unzip python3-pip
     ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa <<<y >/dev/null 2>&1
-    echo "$SUDO_USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+    if [ ! -f "/etc/sudoers.d/01-passwordless-user" ]; then
+        echo "$SUDO_USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/01-passwordless-user
+    fi
 
     check_and_fetch "$forcad" "ForcAD.zip"
     check_and_fetch "$checker" "checkers.zip"
@@ -123,6 +162,10 @@ while getopts ":hf:c:s:-:" opt; do
             ;;
         -) # Handle long options
             case $OPTARG in
+                out)
+                    out="${!OPTIND}" # Next argument is the value
+                    OPTIND=$((OPTIND + 1))     # Shift to next option
+                    ;;
                 forcad)
                     forcad="${!OPTIND}" # Next argument is the value
                     OPTIND=$((OPTIND + 1))     # Shift to next option
@@ -155,6 +198,21 @@ while getopts ":hf:c:s:-:" opt; do
     esac
 done
 
+required_vars=(out)
+for var in "${required_vars[@]}"; do
+    if [ -z "${!var}" ]; then
+        echo "Error: Missing required argument: $var"
+        usage
+    fi
+
+    # Kiểm tra interface có tồn tại và có file address
+    if [ ! -f "/sys/class/net/${!var}/address" ]; then
+        echo "Error: Invalid interface: '${!var}'"
+        usage
+    fi
+done
+
+network_configuration
 basic_setup
 docker_installation
 forcad_setup
