@@ -222,4 +222,53 @@ If everything is correct, we can SSH to our team 2:
 
 ### ------ **Service machine**
 
-If a challenge need to put flag via SSH, you can copy public key from `central` in `/root/.ssh/id_rsa.pub` into team machine.
+Let's copy the script `service.sh` into machine via `scp`, then `ssh` into it and we can run that script to setup service machine. The script require these parameters:
+
+```bash
+./team.sh [OPTION]... --out INTERFACE_OUT --in INTERFACE_IN --team TEAM_NUMBER -s SERVICE_URL
+```
+Below is an example of full command running `team.sh`:
+
+```bash
+./team.sh --out ens33 --in ens37 --team 1 -s https://github.com/
+```
+
+If a challenge need to put flag via SSH, you can copy public key from `central` in `/root/.ssh/id_rsa.pub` into this machine. After you run the script, this service can access the internet:
+
+![](.images/service-try-to-ping-after-setup.png)
+
+Can you see the warning line:
+
+```
+Now install your services and run the following command when you are done:
+    sudo /home/user/service_final.sh
+Caution: You cannot connect to the internet after running that script
+```
+
+The script has created a new script located at `/home/user/service_final.sh`. For this module, the service will not be outbound to avoid reverse shell (i.g). Currently, if you have not executed the script `/home/user/service_final.sh`, you can still connect to the internet. 
+
+**Install your services first!**:
+
+![](.images/service-installs-services.png)
+
+Make sure that your services work properly. If they are, it's time to run that final script:
+
+```bash
+sudo /home/user/service_final.sh
+```
+
+After you run this script, **your SSH connection will be lost!** However, there is another way to SSH to service machine. If you check the topology above, you can see central machine has same subnet with service machine so you can SSH to central then from central, SSH to service:
+
+Central to service 1:
+```bash
+ssh user@10.254.254.1
+```
+
+Central to service 2:
+```bash
+ssh user@10.254.254.2
+```
+
+Finally, from central, make sure you can connect to service machine via team ip:
+
+![](.images/central-test-service-connection.png)
