@@ -70,7 +70,7 @@ That's all we needed. Now let's setup necessary stuff!
 On central, we already have access to Internet because of NAT adapter so let's config on central first. We will transfer `central.sh` into machine using `scp` and then run that script with these required parameters:
 
 ```bash
-./central.sh [OPTION]... --out INTERFACE_OUT --team1 INTERFACE_TEAM1 --team2 INTERFACE_TEAM2 -f FORCAD_URL -c CHECKER_URL
+./central.sh [OPTION]... --out INTERFACE_OUT --team1 INTERFACE_TEAM1 --team2 INTERFACE_TEAM2 [-f FORCAD_URL] [-c CHECKER_URL]
 ```
 
 Explanation:
@@ -150,8 +150,9 @@ Central machine is now set. Let's setup on team machine!
 Let's copy the script `team.sh` into machine via `scp`, then `ssh` into it and we can run that script to setup team machine. The script require these parameters:
 
 ```bash
-./team.sh [OPTION]... --out INTERFACE_OUT --team TEAM_NUMBER -s SERVICE_URL
+./team.sh [OPTION]... --out INTERFACE_OUT --team TEAM_NUMBER [-s SERVICE_URL]
 ```
+
 Below is an example of full command running `team.sh`:
 
 ```bash
