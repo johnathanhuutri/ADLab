@@ -1,13 +1,18 @@
 # Attack & Defense Lab (module 2)
 
 > 1 machine for checker, scoreboard
+
 > 2 machines for teams containing services
+
+## Topology
+
+![](.images/topology.png)
 
 ## VMnet Configuration
 
 In this lab, we will use **VMnet2** and **VMnet3**:
-- **VMnet2** for central vs team1
-- **VMnet3** for central vs team2
+- **VMnet2** (subnet `10.254.1.0/24`): for central vs team1
+- **VMnet3** (subnet `10.254.2.0/24`): for central vs team2
 
 We need to install those VMnets in `Virtual Network Editor` before we can use. On taskbar, select `Edit -> Virtual Network Editor...`:
 
