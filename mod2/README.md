@@ -1,12 +1,15 @@
 # Attack & Defense Lab (module 2)
 
 > 1 machine for checker, scoreboard
-
 > 2 machines for teams containing services
 
 ## VMnet Configuration
 
-In this lab, we will use **VMnet2** and **VMnet3** so we need to install those VMnets in `Virtual Network Editor` before we can use. On taskbar, select `Edit -> Virtual Network Editor...`:
+In this lab, we will use **VMnet2** and **VMnet3**:
+- **VMnet2** for central vs team1
+- **VMnet3** for central vs team2
+
+We need to install those VMnets in `Virtual Network Editor` before we can use. On taskbar, select `Edit -> Virtual Network Editor...`:
 
 ![](.images/path-virtual-network-editor.png)
 
