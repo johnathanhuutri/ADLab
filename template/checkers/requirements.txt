@@ -1,3 +1,0 @@
-checklib==0.7.0
-gevent
-pwntools

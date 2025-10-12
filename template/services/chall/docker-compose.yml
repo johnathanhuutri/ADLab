@@ -1,7 +1,0 @@
-services:
-  chall:
-    build: .
-    hostname: chall
-    ports:
-      - 1337:1337
-    restart: always
