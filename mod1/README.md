@@ -1,7 +1,9 @@
 # Attack & Defense Lab (module 1)
 
 > 1 machine for checker, scoreboard
+
 > 2 machines for teams
+
 > 2 machines for services of each team
 
 ## VMnet Configuration
@@ -39,26 +41,44 @@ Don't worry about those `Subnet Address`, it will help you connect to VM from yo
 
 ### ------ **Central machine**
 
-First, we will need to install 3 network adapter on **central** machine (remember to match VMnet with the correct adapter name):
+First, we will need to install 4 network adapter on **central** machine (remember to match VMnet with the correct adapter name):
 - `Network Adapter` is set to **NAT**
 - `Network Adapter 2` is set to **VMnet2**
 - `Network Adapter 3` is set to **VMnet4**:
+- `Network Adapter 4` is set to **VMnet6**:
 
 ![](.images/central-vmware-adapter.png)
 
-That's good! Let's setup our team machines!
+Those network adaters have to be in that order, if you see the order is as below:
+- `Network Adapter`
+- `Network Adapter 2`
+- `Network Adapter 4`
+- `Network Adapter 3`
+Then you will need to remove `Network Adapter 4` and add again until `Network Adapter 4` is below `Network Adapter 3`. If it is done, let's setup our team machines!
 
 ### ------ **Team machine**
 
-Now we will config `Network Adapter` of team 1 into **VMnet2**:
+For team 1, `Network Adapter` will be **VMnet2** and `Network Adapter 2` will be **VMnet3**:
 
 ![](.images/team1-vmware-adapter.png)
 
-Then we will config `Network Adapter` of team 2 into **VMnet3**:
+For team 2, `Network Adapter` will be **VMnet4** and `Network Adapter 2` will be **VMnet5**:
 
 ![](.images/team2-vmware-adapter.png)
 
-That's all we needed. Now let's setup necessary stuff!
+Let's move on service machines!
+
+### ------ **Service machine**
+
+For service 1, `Network Adapter` will be **VMnet3** and `Network Adapter 2` will be **VMnet6**:
+
+![](.images/service1-vmware-adapter.png)
+
+For service 2, `Network Adapter` will be **VMnet5** and `Network Adapter 2` will be **VMnet6**:
+
+![](.images/service2-vmware-adapter.png)
+
+That's all we needed. Now let's install necessary stuff!
 
 ## Setup
 
