@@ -6,6 +6,10 @@
 
 > 2 machines for services of each team
 
+## Topology
+
+![](.images/topology.png)
+
 ## VMnet Configuration
 
 In this lab, we will use from **VMnet2** to **VMnet6**:
