@@ -84,7 +84,7 @@ In my example, let's check all interface name:
 
 ![](.images/central-check-interface-name.png)
 
-So we can see ens33 is NAT, ens37 is VMnet2 and ens38 is VMnet3 (they are in the same order as Network Adapter Card). For `ForcAD.zip` and `checkers.zip`, you can get it from release section. Below is an example of full command running `central.sh`:
+So we can see **ens33** is **NAT**, **ens37** is **VMnet2** and **ens38** is **VMnet3** (they are in the same order as Network Adapter Card). For `ForcAD.zip` and `checkers.zip`, you can get it from release section. Below is an example of full command running `central.sh`:
 
 ```bash
 ./central.sh --out ens33 --team1 ens37 --team2 ens38 -f https://github.com/ -c https://github.com/
@@ -160,7 +160,11 @@ Below is an example of full command running `team.sh`:
 
 If a challenge need to put flag via SSH, you can copy public key from `central` in `/root/.ssh/id_rsa.pub` into team machine.
 
-**After you setup services on both team machine, let's config the VPN!** Let's download VPN configs of 2 teams to our host:
+After running the script and we can get access to the internet now:
+
+![](.images/team-try-to-ping-after-setup.png)
+
+Let's download VPN configs of 2 teams to our host:
 
 ![](.images/download-team-configs-from-vps.png)
 
@@ -198,3 +202,7 @@ Setup for team 2 is similar:
 If everything is correct, we can SSH to our team 2:
 
 ![](.images/host-try-to-ssh-to-team2.png)
+
+Finally, from central, make sure you can connect to your services:
+
+![](.images/central-test-service-connection.png)
