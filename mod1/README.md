@@ -35,7 +35,7 @@ Then select name for it and click `OK`:
 
 ![](.images/select-new-vmnet2.png)
 
-Do the same with VMnet3, VMnet4, VMnet5 and VMnet6. After you are done, check again and we see that VMnet2 to VMnet6 have been added successfully (**don't change subnet address, just leave it as it is**):
+Do the same with VMnet3, VMnet4, VMnet5 and VMnet6. After you are done, check again and we see that VMnet2 to VMnet6 have been added successfully (**do not change subnet address, just leave it as it is**):
 
 ![](.images/adding-vmnet.png)
 
