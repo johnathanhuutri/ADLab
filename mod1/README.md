@@ -13,11 +13,11 @@
 ## VMnet Configuration
 
 In this lab, we will use from **VMnet2** to **VMnet6**:
-- **VMnet2** for central vs team1
-- **VMnet3** for team1 vs service1
-- **VMnet4** for central vs team2
-- **VMnet5** for team2 vs service2
-- **VMnet6** for central vs service1 and service2 to put and get flag via SSH
+- **VMnet2** for central vs team1 (subnet `10.254.1.0/24`)
+- **VMnet3** for team1 vs service1 (subnet `10.0.0.0/30`)
+- **VMnet4** for central vs team2 (subnet `10.254.2.0/30`)
+- **VMnet5** for team2 vs service2 (subnet `10.0.0.0/30`)
+- **VMnet6** for central vs service1 and service2 to put and get flag via SSH (subnet `10.254.254.0/24`)
 
 On taskbar, go to `Edit -> Virtual Network Editor...`:
 
