@@ -18,92 +18,17 @@ usage() {
 Usage: $0 [OPTION]... --out INTERFACE_OUT --team1 INTERFACE_TEAM1 --team2 INTERFACE_TEAM2 [-f FORCAD_URL] [-c CHECKER_URL]
 
 Options:
-  -f, --forcad                  link to download ForcAD.zip (omit to use local ForcAD.zip)
-  -c, --checker                 link to download checkers.zip (omit to use local checkers.zip)
   --out                         interface name for accessing the internet
   --team1                       interface name for communicating with team1
   --team2                       interface name for communicating with team2
+  -f, --forcad                  link to download ForcAD.zip (omit to use local ForcAD.zip)
+  -c, --checker                 link to download checkers.zip (omit to use local checkers.zip)
   -h, --help                    display help message and exit
 
 Example: $0 --out ens33 --team1 ens37 --team2 ens38 -f https://github.com/ -c https://github.com/
 
 EOF
     exit
-}
-
-check_and_fetch() {
-    local url=$1      # url tương ứng
-    local file=$2     # file local cần kiểm tra
-
-    if [ -n "$url" ]; then
-        echo "[*] Downloading $file from $url"
-        wget -q "$url" -O "$file" || { echo "[-] Failed to download $file"; exit 1; }
-    else
-        if [ ! -f "$file" ]; then
-            echo "[-] Missing $file: neither URL provided nor local file found ($file)"
-            exit 1
-        fi
-        echo "[*] Using local file: $file"
-    fi
-}
-
-basic_setup() {
-    printf "\n\n\n${RED}### Basic setup ###${NC}\n"
-
-    apt-get update
-    apt-get remove -y unattended-upgrades
-    echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
-    echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
-    apt-get install -y build-essential iptables-persistent nginx jq openvpn unzip python3-pip
-    ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa <<<y >/dev/null 2>&1
-    if [ ! -f "/etc/sudoers.d/01-passwordless-user" ]; then
-        echo "$SUDO_USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/01-passwordless-user
-    fi
-
-    check_and_fetch "$forcad" "ForcAD.zip"
-    check_and_fetch "$checker" "checkers.zip"
-
-    unzip -o ForcAD.zip -d /
-    unzip -o checkers.zip -d /ForcAD
-}
-
-docker_installation() {
-    printf "\n\n\n${RED}### Docker installation ###${NC}\n"
-
-    if command -v docker >/dev/null 2>&1; then
-        echo "[*] Docker is already installed, skipping installation."
-        return
-    fi
-
-    # Add Docker's official GPG key
-    apt-get update --fix-missing
-    apt-get install -y ca-certificates curl
-    install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-    chmod a+r /etc/apt/keyrings/docker.asc
-
-    # Add the repository to Apt sources
-    echo \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-      tee /etc/apt/sources.list.d/docker.list > /dev/null
-    apt-get update
-    apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-    usermod -aG docker $SUDO_USER
-
-    echo "[+] Docker installed successfully."
-}
-
-forcad_setup() {
-    printf "\n\n\n${RED}### ForcAD configuration ###${NC}\n"
-
-    cd /ForcAD
-    find checkers -name checker.py -type f -exec chmod +x {} \;
-    cp /root/.ssh/id_rsa ./checkers
-    chmod 644 ./checkers/id_rsa
-    pip3 install -r cli/requirements.txt
-    cd -
 }
 
 network_configuration() {
@@ -181,6 +106,81 @@ EOF
     iptables-save > /etc/iptables/rules.v4
 }
 
+check_and_fetch() {
+    local url=$1      # url tương ứng
+    local file=$2     # file local cần kiểm tra
+
+    if [ -n "$url" ]; then
+        echo "[*] Downloading $file from $url"
+        wget -q "$url" -O "$file" || { echo "[-] Failed to download $file"; exit 1; }
+    else
+        if [ ! -f "$file" ]; then
+            echo "[-] Missing $file: neither URL provided nor local file found ($file)"
+            exit 1
+        fi
+        echo "[*] Using local file: $file"
+    fi
+}
+
+basic_setup() {
+    printf "\n\n\n${RED}### Basic setup ###${NC}\n"
+
+    apt-get update
+    apt-get remove -y unattended-upgrades
+    echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
+    echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
+    apt-get install -y build-essential iptables-persistent nginx jq openvpn unzip python3-pip
+    ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa <<<y >/dev/null 2>&1
+    if [ ! -f "/etc/sudoers.d/01-passwordless-user" ]; then
+        echo "$SUDO_USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/01-passwordless-user
+    fi
+
+    check_and_fetch "$forcad" "ForcAD.zip"
+    check_and_fetch "$checker" "checkers.zip"
+
+    unzip -o ForcAD.zip -d /
+    unzip -o checkers.zip -d /ForcAD
+}
+
+docker_installation() {
+    printf "\n\n\n${RED}### Docker installation ###${NC}\n"
+
+    if command -v docker >/dev/null 2>&1; then
+        echo "[*] Docker is already installed, skipping installation."
+        return
+    fi
+
+    # Add Docker's official GPG key
+    apt-get update --fix-missing
+    apt-get install -y ca-certificates curl
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    chmod a+r /etc/apt/keyrings/docker.asc
+
+    # Add the repository to Apt sources
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      tee /etc/apt/sources.list.d/docker.list > /dev/null
+    apt-get update
+    apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+    usermod -aG docker $SUDO_USER
+
+    echo "[+] Docker installed successfully."
+}
+
+forcad_setup() {
+    printf "\n\n\n${RED}### ForcAD configuration ###${NC}\n"
+
+    cd /ForcAD
+    find checkers -name checker.py -type f -exec chmod +x {} \;
+    cp /root/.ssh/id_rsa ./checkers
+    chmod 644 ./checkers/id_rsa
+    pip3 install -r cli/requirements.txt
+    cd -
+}
+
 
 
 if [ "$EUID" -ne 0 ]
@@ -201,14 +201,6 @@ while getopts ":hf:c:-:" opt; do
             ;;
         -) # Handle long options
             case $OPTARG in
-                forcad)
-                    forcad="${!OPTIND}" # Next argument is the value
-                    OPTIND=$((OPTIND + 1))     # Shift to next option
-                    ;;
-                checker)
-                    checker="${!OPTIND}" # Next argument is the value
-                    OPTIND=$((OPTIND + 1))    # Shift to next option
-                    ;;
                 out)
                     out="${!OPTIND}" # Next argument is the value
                     OPTIND=$((OPTIND + 1))     # Shift to next option
@@ -219,6 +211,14 @@ while getopts ":hf:c:-:" opt; do
                     ;;
                 team2)
                     team2="${!OPTIND}" # Next argument is the value
+                    OPTIND=$((OPTIND + 1))    # Shift to next option
+                    ;;
+                forcad)
+                    forcad="${!OPTIND}" # Next argument is the value
+                    OPTIND=$((OPTIND + 1))     # Shift to next option
+                    ;;
+                checker)
+                    checker="${!OPTIND}" # Next argument is the value
                     OPTIND=$((OPTIND + 1))    # Shift to next option
                     ;;
                 help)
@@ -255,7 +255,7 @@ for var in "${required_vars[@]}"; do
     fi
 done
 
+network_configuration
 basic_setup
 docker_installation
 forcad_setup
-network_configuration

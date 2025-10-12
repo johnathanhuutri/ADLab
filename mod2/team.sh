@@ -11,12 +11,12 @@ export DEBIAN_FRONTEND=noninteractive
 
 usage() {
     cat <<EOF
-Usage: $0 [OPTION]... --out INTERFACE_OUT --team TEAM_NUMBER -s SERVICE_URL
+Usage: $0 [OPTION]... --out INTERFACE_OUT --team TEAM_NUMBER [-s SERVICE_URL]
 
 Options:
-  -s, --service                 link to download services.zip (omit to use local services.zip)
   --out                         interface name for accessing the internet
   --team                        team number
+  -s, --service                 link to download services.zip (omit to use local services.zip)
   -h, --help                    display help message and exit
 
 Example: $0 --out ens33 --team 1 -s https://github.com/
