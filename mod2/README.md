@@ -34,7 +34,7 @@ Do the same with VMnet3:
 
 ![](.images/select-new-vmnet3.png)
 
-Check again and we see that VMnet2 and VMnet3 have been added successfully. Now click `Apply` and `OK` to close this popup:
+Check again and we see that VMnet2 and VMnet3 have been added successfully (**do not change subnet address, just leave it as it is**). Now click `Apply` and `OK` to close this popup:
 
 ![](.images/click-apply-and-ok-after-adding-vmnet.png)
 
