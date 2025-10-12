@@ -92,7 +92,7 @@ That's all we needed. Now let's install necessary stuff!
 On central, we already have access to Internet because of NAT adapter so let's config on central first. We will transfer `central.sh` into machine using `scp` (and `ForcAD.zip` with `checkers.zip` if you have already downloaded) then run script with these required parameters:
 
 ```bash
-./central.sh [OPTION]... --out INTERFACE_OUT --team1 INTERFACE_TEAM1 --team2 INTERFACE_TEAM2 --in INTERFACE_IN -f FORCAD_URL -c CHECKER_URL
+./central.sh [OPTION]... --out INTERFACE_OUT --team1 INTERFACE_TEAM1 --team2 INTERFACE_TEAM2 --in INTERFACE_IN [-f FORCAD_URL] [-c CHECKER_URL]
 ```
 
 Explanation:
@@ -229,7 +229,7 @@ If everything is correct, we can SSH to our team 2:
 Let's copy the script `service.sh` into machine via `scp`, then `ssh` into it and we can run that script to setup service machine. The script require these parameters:
 
 ```bash
-./team.sh [OPTION]... --out INTERFACE_OUT --in INTERFACE_IN --team TEAM_NUMBER -s SERVICE_URL
+./team.sh [OPTION]... --out INTERFACE_OUT --in INTERFACE_IN --team TEAM_NUMBER [-s SERVICE_URL]
 ```
 Below is an example of full command running `team.sh`:
 
