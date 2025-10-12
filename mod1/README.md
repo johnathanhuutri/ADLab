@@ -54,6 +54,7 @@ Those network adaters have to be in that order, if you see the order is as below
 - `Network Adapter 2`
 - `Network Adapter 4`
 - `Network Adapter 3`
+
 Then you will need to remove `Network Adapter 4` and add again until `Network Adapter 4` is below `Network Adapter 3`. If it is done, let's setup our team machines!
 
 ### ------ **Team machine**
@@ -84,16 +85,17 @@ That's all we needed. Now let's install necessary stuff!
 
 ### ------ **Central machine**
 
-On central, we already have access to Internet because of NAT adapter so let's config on central first. We will transfer `central.sh` into machine using `scp` and then run that script with these required parameters:
+On central, we already have access to Internet because of NAT adapter so let's config on central first. We will transfer `central.sh` into machine using `scp` (and `ForcAD.zip` with `checkers.zip` if you have already downloaded) then run script with these required parameters:
 
 ```bash
-./central.sh [OPTION]... --out INTERFACE_OUT --team1 INTERFACE_TEAM1 --team2 INTERFACE_TEAM2 -f FORCAD_URL -c CHECKER_URL
+./central.sh [OPTION]... --out INTERFACE_OUT --team1 INTERFACE_TEAM1 --team2 INTERFACE_TEAM2 --in INTERFACE_IN -f FORCAD_URL -c CHECKER_URL
 ```
 
 Explanation:
-- `INTERFACE_OUT`: general ip that all team will use to attack (or view scoreboard)
-- `INTERFACE_TEAM1`: ip of server to communicate with team1
-- `INTERFACE_TEAM2`: ip of server to communicate with team2
+- `INTERFACE_OUT`: Interface using **NAT**
+- `INTERFACE_TEAM1`: Interface using **VMnet2**
+- `INTERFACE_TEAM2`: Interface using **VMnet4**
+- `INTERFACE_IN`: Interface using **VMnet6**
 - `FORCAD_URL`: link to download ForcAD.zip
 - `CHECKER_URL`: link to download checkers.zip
 
@@ -101,10 +103,10 @@ In my example, let's check all interface name:
 
 ![](.images/central-check-interface-name.png)
 
-So we can see ens33 is NAT, ens37 is VMnet2 and ens38 is VMnet3 (they are in the same order as Network Adapter Card). For `ForcAD.zip` and `checkers.zip`, you can get it from release section. Below is an example of full command running `central.sh`:
+So we can see **ens33** is **NAT**, **ens37** is **VMnet2**, **ens38** is **VMnet4** and **ens39** is **VMnet6** (they are in the same order as Network Adapter Card). For `ForcAD.zip` and `checkers.zip`, you can get it from release section. Below is an example of full command running `central.sh`:
 
 ```bash
-./central.sh --out ens33 --team1 ens37 --team2 ens38 -f https://github.com/ -c https://github.com/
+./central.sh --out ens33 --team1 ens37 --team2 ens38 --in ens39 -f https://github.com/ -c https://github.com/
 ```
 
 > This script will also generate a new SSH key pair and put private key in `/ForcAD/checkers` just in case you need it.
@@ -167,17 +169,19 @@ Central machine is now set. Let's setup on team machine!
 Let's copy the script `team.sh` into machine via `scp`, then `ssh` into it and we can run that script to setup team machine. The script require these parameters:
 
 ```bash
-./team.sh [OPTION]... --out INTERFACE_OUT --team TEAM_NUMBER -s SERVICE_URL
+./team.sh [OPTION]... --out INTERFACE_OUT --in INTERFACE_IN --team TEAM_NUMBER
 ```
 Below is an example of full command running `team.sh`:
 
 ```bash
-./team.sh --out ens33 --team 1 -s https://github.com/
+./team.sh --out ens33 --in ens37 --team 1
 ```
 
-If a challenge need to put flag via SSH, you can copy public key from `central` in `/root/.ssh/id_rsa.pub` into team machine.
+After running the script and we can get access to the internet now:
 
-**After you setup services on both team machine, let's config the VPN!** Let's download VPN configs of 2 teams to our host:
+![](.images/team-try-to-ping-after-setup.png)
+
+Let's download VPN configs of 2 teams to our host:
 
 ![](.images/download-team-configs-from-vps.png)
 
@@ -215,3 +219,7 @@ Setup for team 2 is similar:
 If everything is correct, we can SSH to our team 2:
 
 ![](.images/host-try-to-ssh-to-team2.png)
+
+### ------ **Service machine**
+
+If a challenge need to put flag via SSH, you can copy public key from `central` in `/root/.ssh/id_rsa.pub` into team machine.
