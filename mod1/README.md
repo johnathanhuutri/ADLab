@@ -35,7 +35,7 @@ Then select name for it and click `OK`:
 
 ![](.images/select-new-vmnet2.png)
 
-Do the same with VMnet3, VMnet4, VMnet5 and VMnet6. After you are done, check again and we see that VMnet2 to VMnet6 have been added successfully:
+Do the same with VMnet3, VMnet4, VMnet5 and VMnet6. After you are done, check again and we see that VMnet2 to VMnet6 have been added successfully (**don't change subnet address, just leave it as it is**):
 
 ![](.images/adding-vmnet.png)
 
@@ -273,6 +273,6 @@ Central to service 2:
 ssh user@10.254.254.2
 ```
 
-Finally, from central, make sure you can connect to service machine via team ip:
+Finally, from central, make sure you can connect to your services via team ip:
 
 ![](.images/central-test-service-connection.png)
