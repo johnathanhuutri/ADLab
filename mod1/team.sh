@@ -4,8 +4,8 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'                # No Color
-in=""
 out=""
+in=""
 team=""
 
 export EASYRSA_BATCH=1
@@ -13,11 +13,11 @@ export DEBIAN_FRONTEND=noninteractive
 
 usage() {
     cat <<EOF
-Usage: $0 [OPTION]... --out INTERFACE_OUT --team TEAM_NUMBER -s SERVICE_URL
+Usage: $0 [OPTION]... --out INTERFACE_OUT --in INTERFACE_IN --team TEAM_NUMBER
 
 Options:
-  --out                         interface name for accessing outside (the internet)
-  --in                          interface name for accessing inside (service)
+  --out                         interface accessing the internet
+  --in                          interface communicating between team and service
   --team                        team number
   -h, --help                    display help message and exit
 
@@ -30,17 +30,15 @@ EOF
 network_configuration() {
     printf "\n\n\n$RED### Network configuration ###$NC\n"
 
-    # Check internet
-    if ping -c 1 -W 2 8.8.8.8 > /dev/null 2>&1; then
-        echo "[*] Network config successful"
-        return
-    fi
-
     mac_in=$(cat /sys/class/net/$in/address)
     mac_out=$(cat /sys/class/net/$out/address)
 
-    rm -rf /etc/netplan/*
-    echo """network:
+    # --- Check & apply netplan if not configured ---
+    if [ ! -f /etc/netplan/01-network.yaml ]; then
+        printf "${YELLOW}Applying new Netplan configuration...${NC}"
+        rm -rf /etc/netplan/*
+        cat <<EOF > /etc/netplan/01-network.yaml
+network:
     version: 2
     ethernets:
         out:
@@ -61,9 +59,13 @@ network_configuration() {
             addresses: [10.0.0.1/30]
             match:
                 macaddress: $mac_in
-            set-name: in""" > "/etc/netplan/01-network.yaml"
-    chmod 600 "/etc/netplan/01-network.yaml"
-    netplan apply
+            set-name: in
+EOF
+        chmod 600 "/etc/netplan/01-network.yaml"
+        netplan apply
+    else
+        printf "${GREEN}Netplan already configured, skipping...${NC}"
+    fi
 
     # --- IP forwarding ---
     echo 'net.ipv4.ip_forward = 1' > /etc/sysctl.d/99-ipforward.conf
@@ -82,7 +84,7 @@ basic_setup() {
     echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
     apt-get install -y build-essential iptables-persistent openvpn
     apt-get clean
-    
+
     # --- Save and auto restore when reboot ---
     iptables-save > /etc/iptables/rules.v4
 

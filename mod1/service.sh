@@ -4,22 +4,26 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'                # No Color
-service=""
 out=""
+in=""
+team=""
+service=""
 
 export EASYRSA_BATCH=1
 export DEBIAN_FRONTEND=noninteractive
 
 usage() {
     cat <<EOF
-Usage: $0 [OPTION]... --out INTERFACE_OUT -s SERVICE_URL
+Usage: $0 [OPTION]... --out INTERFACE_OUT --in INTERFACE_IN --team TEAM_NUMBER -s SERVICE_URL
 
 Options:
-  --out                         interface name for accessing the internet
+  --out                         interface accessing the internet
+  --in                          interface communicating between service and central
+  --team                        team number
   -s, --service                 link to download services.zip (omit to use local services.zip)
   -h, --help                    display help message and exit
 
-Example: $0 --out ens33 -s https://github.com/
+Example: $0 --out ens33 --in ens37 --team 1 -s https://github.com/
 
 EOF
     exit
@@ -35,9 +39,14 @@ network_configuration() {
     fi
 
     mac_out=$(cat /sys/class/net/$out/address)
+    mac_in=$(cat /sys/class/net/$in/address)
 
-    rm -rf /etc/netplan/*
-    echo """network:
+    # --- Check & apply netplan if not configured ---
+    if [ ! -f /etc/netplan/01-network.yaml ]; then
+        printf "${YELLOW}Applying new Netplan configuration...${NC}"
+        rm -rf /etc/netplan/*
+        cat <<EOF > /etc/netplan/01-network.yaml
+network:
     version: 2
     ethernets:
         out:
@@ -51,9 +60,23 @@ network_configuration() {
                 addresses: [8.8.8.8, 8.8.4.4]
             match:
                 macaddress: $mac_out
-            set-name: out""" > "/etc/netplan/01-network.yaml"
-    chmod 600 "/etc/netplan/01-network.yaml"
-    netplan apply
+            set-name: out
+        in:
+            optional: true
+            dhcp4: true
+            addresses: [10.254.254.$team/24]
+            routes:
+              - to: 10.254.254.0/24
+                via: 10.254.254.254
+            match:
+                macaddress: $mac_in
+            set-name: in
+EOF
+        chmod 600 "/etc/netplan/01-network.yaml"
+        netplan apply
+    else
+        printf "${GREEN}Netplan already configured, skipping...${NC}"
+    fi
 }
 
 check_and_fetch() {
@@ -80,7 +103,7 @@ basic_setup() {
     echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
     apt-get install -y build-essential iptables-persistent unzip
     apt-get clean
-    
+
     # --- Create SSH key ---
     ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa <<<y >/dev/null 2>&1
 
@@ -123,12 +146,11 @@ docker_installation() {
 }
 
 post_network_configuration() {
-    echo 'sudo systemctl stop ssh' >> service_final.sh
-    echo 'sudo systemctl disable ssh' >> service_final.sh
     echo 'sudo iptables -I DOCKER-USER ! -s 10.0.0.1 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT' >> service_final.sh
     echo 'sudo iptables -A DOCKER-USER -j DROP' >> service_final.sh
-    echo 'sudo iptables -I INPUT ! -s 10.0.0.1 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT' >> service_final.sh
-    echo 'sudo iptables -I OUTPUT -m conntrack --ctstate ESTABLISHED -j ACCEPT' >> service_final.sh
+    echo 'sudo iptables -A INPUT -i in -j ACCEPT' >> service_final.sh
+    echo 'sudo iptables -A INPUT -p tcp ! --dport 22 ! -s 10.0.0.1 -j ACCEPT' >> service_final.sh
+    echo 'sudo iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED -j ACCEPT' >> service_final.sh
     echo 'sudo iptables -P INPUT DROP' >> service_final.sh
     echo 'sudo iptables -P OUTPUT DROP' >> service_final.sh
     echo 'sudo bash -c "iptables-save > /etc/iptables/rules.v4"' >> service_final.sh
@@ -136,7 +158,7 @@ post_network_configuration() {
 
     printf "\n\n${YELLOW}Now install your services and run the following command when you are done:"
     printf "\n    sudo `pwd`/service_final.sh"
-    printf "\n${RED}Caution: You cannot connect to the internet after running that script\n\n"
+    printf "\n${RED}Caution: You cannot connect to the internet after running that script\n\n${NC}"
 }
 
 
@@ -156,13 +178,21 @@ while getopts ":hs:-:" opt; do
             ;;
         -) # Handle long options
             case $OPTARG in
-                service)
-                    service="${!OPTIND}" # Next argument is the value
-                    OPTIND=$((OPTIND + 1))     # Shift to next option
-                    ;;
                 out)
                     out="${!OPTIND}" # Next argument is the value
                     OPTIND=$((OPTIND + 1))    # Shift to next option
+                    ;;
+                in)
+                    in="${!OPTIND}" # Next argument is the value
+                    OPTIND=$((OPTIND + 1))    # Shift to next option
+                    ;;
+                team)
+                    team="${!OPTIND}" # Next argument is the value
+                    OPTIND=$((OPTIND + 1))    # Shift to next option
+                    ;;
+                service)
+                    service="${!OPTIND}" # Next argument is the value
+                    OPTIND=$((OPTIND + 1))     # Shift to next option
                     ;;
                 help)
                     usage
@@ -184,7 +214,7 @@ while getopts ":hs:-:" opt; do
     esac
 done
 
-required_vars=(out)
+required_vars=(out in team)
 for var in "${required_vars[@]}"; do
     if [ -z "${!var}" ]; then
         echo "Error: Missing required argument: $var"
@@ -195,6 +225,10 @@ done
 # Kiểm tra interface có tồn tại và có file address
 if [ ! -f "/sys/class/net/$out/address" ]; then
     echo "Error: Invalid interface: '$out'"
+    usage
+fi
+if [ ! -f "/sys/class/net/$in/address" ]; then
+    echo "Error: Invalid interface: '$in'"
     usage
 fi
 

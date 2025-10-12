@@ -9,23 +9,25 @@ checker=""
 out=""
 team1=""
 team2=""
+int=""
 
 export EASYRSA_BATCH=1
 export DEBIAN_FRONTEND=noninteractive
 
 usage() {
     cat <<EOF
-Usage: $0 [OPTION]... --out INTERFACE_OUT --team1 INTERFACE_TEAM1 --team2 INTERFACE_TEAM2 [-f FORCAD_URL] [-c CHECKER_URL]
+Usage: $0 [OPTION]... --out INTERFACE_OUT --team1 INTERFACE_TEAM1 --team2 INTERFACE_TEAM2 --in INTERFACE_IN [-f FORCAD_URL] [-c CHECKER_URL]
 
 Options:
+  --out                         interface accessing the internet
+  --team1                       interface communicating between central and team1
+  --team2                       interface communicating between central and team2
+  --in                          interface communicating between central and service
   -f, --forcad                  link to download ForcAD.zip (omit to use local ForcAD.zip)
   -c, --checker                 link to download checkers.zip (omit to use local checkers.zip)
-  --out                         interface name for accessing the internet
-  --team1                       interface name for communicating with team1
-  --team2                       interface name for communicating with team2
   -h, --help                    display help message and exit
 
-Example: $0 --out ens33 --team1 ens37 --team2 ens38 -f https://github.com/ -c https://github.com/
+Example: $0 --out ens33 --team1 ens37 --team2 ens38 --in ens39 -f https://github.com/ -c https://github.com/
 
 EOF
     exit
@@ -53,6 +55,7 @@ network_configuration() {
     mac_out=$(cat /sys/class/net/$out/address)
     mac_team1=$(cat /sys/class/net/$team1/address)
     mac_team2=$(cat /sys/class/net/$team2/address)
+    mac_in=$(cat /sys/class/net/$in/address)
 
     # --- Check & apply netplan if not configured ---
     if [ ! -f /etc/netplan/01-network.yaml ]; then
@@ -88,6 +91,13 @@ network:
             match:
                 macaddress: $mac_team2
             set-name: team2
+        in:
+            optional: true
+            dhcp4: false
+            addresses: [10.254.254.254/24]
+            match:
+                macaddress: $mac_in
+            set-name: in
 EOF
         chmod 600 /etc/netplan/01-network.yaml
         netplan apply
@@ -215,6 +225,10 @@ while getopts ":hf:c:-:" opt; do
                     team2="${!OPTIND}" # Next argument is the value
                     OPTIND=$((OPTIND + 1))    # Shift to next option
                     ;;
+                in)
+                    in="${!OPTIND}" # Next argument is the value
+                    OPTIND=$((OPTIND + 1))    # Shift to next option
+                    ;;
                 help)
                     usage
                     ;;
@@ -235,7 +249,7 @@ while getopts ":hf:c:-:" opt; do
     esac
 done
 
-required_vars=(out team1 team2)
+required_vars=(out team1 team2 in)
 for var in "${required_vars[@]}"; do
     if [ -z "${!var}" ]; then
         echo "Error: Missing required argument: $var"
