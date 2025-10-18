@@ -40,7 +40,7 @@ network_configuration() {
 
     # --- Check & apply netplan if not configured ---
     if [ ! -f /etc/netplan/01-network.yaml ]; then
-        echo "${YELLOW}Applying new Netplan configuration...${NC}"
+        printf "${YELLOW}Applying new Netplan configuration...${NC}"
         rm -rf /etc/netplan/*
         cat <<EOF > /etc/netplan/01-network.yaml
 network:
