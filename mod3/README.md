@@ -2,6 +2,10 @@
 
 > 1 machine host all services of all teams
 
+## Topology
+
+![](.images/topology.png)
+
 ## VMnet Configuration
 
 We only need 1 network adapter that is set to **NAT**:
